@@ -105,10 +105,6 @@ body, html {
   flex-direction: row !important; /* จัดเรียงเป็นแนวนอน (ซ้ายไปขวา) */
   align-items: center;            /* จัดให้อยู่กึ่งกลางแนวตั้ง */
   gap: 12px;                      /* เว้นระยะห่างระหว่างไอคอนกับข้อความ */
-  text-align: left;               /* จัดตัวหนังสือชิดซ้าย */
-  margin-top: 0 !important; 
-  border-top: none !important;
-  padding-top: 0 !important;
 }
 
 .user-details {
