@@ -10,6 +10,8 @@ const awsConfig = {
           scopes: ["email", "openid", "profile", "aws.cognito.signin.user.admin"],
           redirectSignIn: ["http://localhost:5173/", "http://localhost:5173/login"],
           redirectSignOut: ["http://localhost:5173/", "http://localhost:5173/login"],
+          redirectSignIn: ["https://main.d2rof1iy68oyio.amplifyapp.com/", "https://main.d2rof1iy68oyio.amplifyapp.com/login"],
+          redirectSignOut: ["https://main.d2rof1iy68oyio.amplifyapp.com/", "https://main.d2rof1iy68oyio.amplifyapp.com/"],
           responseType: "code"
         }
       }

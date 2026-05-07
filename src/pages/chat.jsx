@@ -5,7 +5,7 @@ import '../App.css';
 import { getCurrentUser, signOut, fetchUserAttributes, fetchAuthSession } from 'aws-amplify/auth';
 
 const API_URL = import.meta.env.VITE_API_URL;
-const DEFAULT_MODEL = "us.anthropic.claude-haiku-4-5-20251001-v1:0";
+const DEFAULT_MODEL = "us.amazon.nova-2-lite-v1:0";
 
 function Chat() {
   const [displayName, setDisplayName] = useState('');
@@ -40,7 +40,7 @@ function Chat() {
   }, [messages]);
 
   const startNewChat = () => {
-    setSessionId(null); // reset → Lambda จะสร้าง session ใหม่ให้
+    setSessionId(null); // reset Lambda จะสร้าง session ใหม่
     setMessages([{ role: 'ai', content: 'สร้างการสนทนาใหม่เรียบร้อย' }]);
   };
 
@@ -120,7 +120,7 @@ function Chat() {
               className={`history-item ${sessionId === chat.id ? 'active' : ''}`}
             >
               <MessageSquare size={16} />
-              <span className="history-text">Session: {chat.id.slice(0, 8)}...</span>
+              <span>{chat.title || 'New Chat'}</span>
             </div>
           ))}
         </div>
