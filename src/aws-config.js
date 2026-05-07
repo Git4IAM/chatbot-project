@@ -1,3 +1,11 @@
+// 1. เช็คว่าตอนนี้เปิดเว็บจาก localhost หรือไม่
+const isLocalhost = window.location.hostname === "localhost";
+
+// 2. กำหนด URL ให้ตรงกับสถานการณ์ปัจจุบัน (อย่าลืมใส่ / ปิดท้าย)
+const redirectUrl = isLocalhost 
+  ? "http://localhost:5173/" 
+  : "https://main.d2rof1iy68oyio.amplifyapp.com/";
+
 const awsConfig = {
   Auth: {
     Cognito: {
@@ -8,8 +16,9 @@ const awsConfig = {
         oauth: {
           domain: import.meta.env.VITE_COGINTO_DOMAIN,
           scopes: ["email", "openid", "profile", "aws.cognito.signin.user.admin"],
-          redirectSignIn: ["https://main.d2rof1iy68oyio.amplifyapp.com/", "https://main.d2rof1iy68oyio.amplifyapp.com/login"],
-          redirectSignOut: ["https://main.d2rof1iy68oyio.amplifyapp.com/", "https://main.d2rof1iy68oyio.amplifyapp.com/login"],
+          // 3. ใส่ตัวแปร redirectUrl ที่เช็คแล้วลงไปใน Array ตัวเดียวจบ
+          redirectSignIn: [redirectUrl],
+          redirectSignOut: [redirectUrl],
           responseType: "code"
         }
       }
@@ -18,8 +27,3 @@ const awsConfig = {
 };
 
 export default awsConfig;
-
-//3. สร้างโฟลเดอร์ src/pages/
-
-/*src/pages/Login.jsx 
-src/pages/Chat.jsx*/
