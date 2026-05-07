@@ -8,10 +8,8 @@ const awsConfig = {
         oauth: {
           domain: import.meta.env.VITE_COGINTO_DOMAIN,
           scopes: ["email", "openid", "profile", "aws.cognito.signin.user.admin"],
-          redirectSignIn: ["http://localhost:5173/", "http://localhost:5173/login"],
-          redirectSignOut: ["http://localhost:5173/", "http://localhost:5173/login"],
-          redirectSignIn: ["https://main.d2rof1iy68oyio.amplifyapp.com/", "https://main.d2rof1iy68oyio.amplifyapp.com/login"],
-          redirectSignOut: ["https://main.d2rof1iy68oyio.amplifyapp.com/", "https://main.d2rof1iy68oyio.amplifyapp.com/login"],
+          redirectSignIn: ["http://localhost:5173/", "http://localhost:5173/login", "https://main.d2rof1iy68oyio.amplifyapp.com/", "https://main.d2rof1iy68oyio.amplifyapp.com/login"],
+          redirectSignOut: ["http://localhost:5173/", "http://localhost:5173/login", "https://main.d2rof1iy68oyio.amplifyapp.com/login", "https://main.d2rof1iy68oyio.amplifyapp.com/"],
           responseType: "code"
         }
       }
