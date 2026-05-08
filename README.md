@@ -1,16 +1,145 @@
-# React + Vite
+# 🤖 University AI Chat
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+> AI Chat Application สำหรับนักศึกษามหาวิทยาลัย พัฒนาบน AWS Serverless Architecture
 
-Currently, two official plugins are available:
+![AWS](https://img.shields.io/badge/AWS-Serverless-FF9900?style=flat&logo=amazonaws)
+![React](https://img.shields.io/badge/React-Vite-61DAFB?style=flat&logo=react)
+![Python](https://img.shields.io/badge/Python-Lambda-3776AB?style=flat&logo=python)
+![Amazon Bedrock](https://img.shields.io/badge/Amazon-Bedrock-FF9900?style=flat&logo=amazonaws)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+---
 
-## React Compiler
+## 📌 เกี่ยวกับโปรเจก(Not Finished yet)
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+ระบบ AI Chat สำหรับนักศึกษามหาวิทยาลัย ที่ให้สามารถสนทนากับ AI ได้อย่างปลอดภัย โดยจำกัดการเข้าถึงเฉพาะ email มหาวิทยาลัย (@silpakorn.edu) เท่านั้น รองรับการส่งข้อความ, รูปภาพ และเลือก AI Model ได้หลายรุ่น
 
-## Expanding the ESLint configuration
+---
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## ✨ Features
+
+- 🔐 **Authentication** — Login ด้วย Google OAuth 2.0 ผ่าน Amazon Cognito จำกัดเฉพาะ email มหาวิทยาลัย
+- 💬 **AI Chat** — สนทนากับ AI ได้หลาย Model (Claude Haiku, Sonnet, Opus และ Amazon Nova)
+- 🖼️ **Image Upload** — ส่งรูปภาพให้ AI วิเคราะห์ได้
+- 📋 **Session Management** — บันทึกประวัติการสนทนา, เปลี่ยนชื่อ และลบ Session ได้
+- 🔄 **Model Switcher** — เปลี่ยน AI Model ได้ตามความต้องการ
+- 📱 **Responsive UI** — ใช้งานได้ทั้งบน Desktop และ Mobile
+
+---
+
+## 🏗️ System Architecture
+
+```
+User → AWS Amplify (React + Vite)
+     → Amazon Cognito (Google OAuth 2.0)
+     → API Gateway (HTTP API + JWT Authorizer)
+     → AWS Lambda (Python)
+     → Amazon Bedrock (Claude / Nova)
+     → Amazon DynamoDB (Chat History)
+     → Amazon S3 (Image Storage)
+```
+
+---
+
+## 🛠️ Tech Stack
+
+| Layer | Technology |
+|-------|-----------|
+| Frontend | React, Vite, AWS Amplify |
+| Authentication | Amazon Cognito, Google OAuth 2.0 |
+| API | Amazon API Gateway (HTTP API) |
+| Backend | AWS Lambda (Python) |
+| AI Model | Amazon Bedrock (Claude Haiku 4.5, Sonnet 4.5, Opus 4, Nova 2 Lite) |
+| Database | Amazon DynamoDB |
+| Storage | Amazon S3 |
+| CI/CD | AWS Amplify CI/CD |
+
+---
+
+## 📡 API Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/chat` | ส่งข้อความและรับ AI Response |
+| POST | `/upload-url` | ขอ S3 Presigned URL สำหรับ upload รูปภาพ |
+| GET | `/sessions` | ดึงรายการ Session ทั้งหมด |
+| GET | `/sessions/:id` | ดึงประวัติการสนทนาของ Session |
+| PATCH | `/sessions/:id` | เปลี่ยนชื่อ Session |
+| DELETE | `/sessions/:id` | ลบ Session |
+
+---
+
+## 🗄️ Database Schema
+
+**Sessions Table**
+```
+PK: userId (String)
+SK: sessionId (String)
+title: String
+createdAt: String
+updatedAt: String
+```
+
+**Messages Table**
+```
+PK: sessionId (String)
+SK: messageId (String)
+role: String (user / assistant)
+content: String
+createdAt: String
+```
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+- Node.js >= 18
+- AWS Account
+- Google Cloud Console Project
+
+### Installation
+
+```bash
+# Clone repository
+git clone https://github.com/[username]/chatbot-project.git
+cd chatbot-project
+
+# Install dependencies
+npm install
+
+# Setup environment variables
+cp .env.example .env
+```
+
+### Environment Variables
+
+```env
+VITE_COGNITO_USER_POOL_ID=ap-southeast-1_xxxxxxx
+VITE_COGNITO_CLIENT_ID=xxxxxxxxxxxxxxx
+VITE_COGINTO_DOMAIN=xxxxxx.auth.ap-southeast-1.amazoncognito.com
+VITE_API_URL=https://xxxxxx.execute-api.ap-southeast-1.amazonaws.com
+VITE_AWS_REGION=ap-southeast-1
+```
+
+### Run Development Server
+
+```bash
+npm run dev
+```
+
+---
+
+## ☁️ Deployment
+
+โปรเจกนี้ Deploy บน **AWS Amplify** โดย Auto Deploy ทุกครั้งที่ Push ขึ้น branch `main`
+
+```bash
+git push origin main
+# Amplify จะ Build และ Deploy ให้อัตโนมัติ
+```
+
+---
+
+## 👤 Author
+
+พัฒนาโดย นักศึกษามหาวิทยาลัยศิลปากร
