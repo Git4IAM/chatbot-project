@@ -114,11 +114,11 @@ cp .env.example .env
 ### Environment Variables
 
 ```env
-VITE_COGNITO_USER_POOL_ID=ap-southeast-1_xxxxxxx
-VITE_COGNITO_CLIENT_ID=xxxxxxxxxxxxxxx
-VITE_COGINTO_DOMAIN=xxxxxx.auth.ap-southeast-1.amazoncognito.com
-VITE_API_URL=https://xxxxxx.execute-api.ap-southeast-1.amazonaws.com
-VITE_AWS_REGION=ap-southeast-1
+VITE_COGNITO_USER_POOL_ID
+VITE_COGNITO_CLIENT_ID
+VITE_COGINTO_DOMAIN
+VITE_API_URL
+VITE_AWS_REGION
 ```
 
 ### Run Development Server
@@ -139,7 +139,3 @@ git push origin main
 ```
 
 ---
-
-## 👤 Author
-
-พัฒนาโดย นักศึกษามหาวิทยาลัยศิลปากร
