@@ -1,7 +1,7 @@
 // 1. เช็คว่าตอนนี้เปิดเว็บจาก localhost หรือไม่
 const isLocalhost = window.location.hostname === "localhost";
 
-// 2. กำหนด URL ให้ตรงกับสถานการณ์ปัจจุบัน (อย่าลืมใส่ / ปิดท้าย)
+// 2. กำหนด URL ให้ตรงกับสถานการณ์ปัจจุบัน
 const redirectUrl = isLocalhost 
   ? "http://localhost:5173/" 
   : "https://main.d2rof1iy68oyio.amplifyapp.com/";
@@ -14,7 +14,7 @@ const awsConfig = {
       region: "ap-southeast-1",
       loginWith: {
         oauth: {
-          domain: import.meta.env.VITE_COGINTO_DOMAIN,
+          domain: import.meta.env.VITE_COGNITO_DOMAIN,
           scopes: ["email", "openid", "profile", "aws.cognito.signin.user.admin"],
           // 3. ใส่ตัวแปร redirectUrl ที่เช็คแล้วลงไปใน Array ตัวเดียวจบ
           redirectSignIn: [redirectUrl],
