@@ -14,6 +14,7 @@ function Chat() {
   useEffect(() => {
     const loadUser = async () => {
       const attrs = await fetchUserAttributes();
+      console.log(attrs)
       setDisplayName(attrs.name || attrs.email.split('@')[0]);
 
       // ดึง JWT token จาก Cognito session

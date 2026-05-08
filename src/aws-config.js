@@ -15,7 +15,7 @@ const awsConfig = {
       loginWith: {
         oauth: {
           domain: import.meta.env.VITE_COGNITO_DOMAIN,
-          scopes: ["email", "openid", "profile"],
+          scopes: ["email", "openid", "profile", "aws.cognito.signin.user.admin"],
           // 3. ใส่ตัวแปร redirectUrl ที่เช็คแล้วลงไปใน Array ตัวเดียวจบ
           redirectSignIn: [redirectUrl],
           redirectSignOut: [redirectUrl],
