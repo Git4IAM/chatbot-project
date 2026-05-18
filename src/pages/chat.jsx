@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
-import { Send, PlusCircle, MessageSquare, User, Bot, LogOut } from 'lucide-react';
+import { Send, PlusCircle, MessageSquare, User, Bot, LogOut, Loader2 } from 'lucide-react';
 import '../App.css';
 import { getCurrentUser, signOut, fetchUserAttributes, fetchAuthSession } from 'aws-amplify/auth';
 
 const API_URL = import.meta.env.VITE_API_URL;
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 const DEFAULT_MODEL = "us.amazon.nova-2-lite-v1:0";
 
 function Chat() {
@@ -22,6 +23,7 @@ function Chat() {
       const token = session.tokens?.idToken?.toString();
       console.log(token);
       setAuthToken(token);
+      await loadSessions(token);
     };
     loadUser();
   }, []);
@@ -34,6 +36,7 @@ function Chat() {
   const [sessionId, setSessionId] = useState(null); // null = ยังไม่มี session
   const [selectedModel, setSelectedModel] = useState(DEFAULT_MODEL);
   const [chatHistory, setChatHistory] = useState([]);
+  const [loadingSessions, setLoadingSessions] = useState(false);
 
   const messagesEndRef = useRef(null);
   useEffect(() => {
@@ -44,6 +47,43 @@ function Chat() {
     setSessionId(null); // reset Lambda จะสร้าง session ใหม่
     setMessages([{ role: 'ai', content: 'สร้างการสนทนาใหม่เรียบร้อย' }]);
   };
+
+  const loadSessions = async (token) => {
+    if (!token) return;
+    setLoadingSessions(true);
+    try{
+      const res = await axios.get(`${API_BASE_URL}/sessions`, {
+        headers: {Authorization: token}
+      });
+      setChatHistory(res.data.sessions || []);
+    } catch (err) {
+      console.error('Load sessions error:', err);
+    } finally {
+      setLoadingSessions(false);
+    }
+};
+
+const handleSelectSession = async (sid) => {
+  if (sid===sessionId) return;
+  setSessionId(sid);
+  setMessages([]);
+  setIsLoading(true);
+  try {
+    const res = await axios.get(`${API_BASE_URL}/sessions/${sid}`, {
+      headers: {Authorization: authToken}
+    });
+    const loaded = (res.data.messages || []).map((m) => ({
+      role: m.role === 'assistant' ? 'ai' : 'user',
+      content: m.content
+    }));
+    setMessages(loaded.length > 0 ? loaded : [{ role: 'ai', content: 'ไม่พบประวัติการสนทนา' }]);
+  } catch (err) {
+    console.error('Load messages error:', err);
+    setMessages([{ role: 'ai', content: 'ไม่สามารถโหลดประวัติได้' }]);
+  } finally {
+    setIsLoading(false);
+  }
+}
 
   const handleSend = async () => {
     if (!input.trim() || !authToken) return;
@@ -73,7 +113,7 @@ function Chat() {
       if (res.data.is_new_session) {
         setSessionId(res.data.session_id);
         setChatHistory(prev => [
-          { id: res.data.session_id, title: 'New Chat' },
+          { sessionId: res.data.session_id, title: input.slice(0, 40) || 'New Chat' },
           ...prev
         ]);
       }
@@ -115,10 +155,16 @@ function Chat() {
 
         <div className="history-list">
           <p className="section-label">Recent</p>
-          {chatHistory.map((chat) => (
+          {loadingSessions ? (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', color: '#888'}}>
+              <Loader2 size={14} className="spin" />
+              <span>กำลังโหลด...</span>
+              </div>
+          ) : chatHistory.map((chat) => (
             <div
-              key={chat.id}
-              className={`history-item ${sessionId === chat.id ? 'active' : ''}`}
+              key={chat.sessionId}
+              className={`history-item ${sessionId === chat.sessionId ? 'active' : ''}`}
+              onClick={() => handleSelectSession(chat.sessionId)}
             >
               <MessageSquare size={16} />
               <span>{chat.title || 'New Chat'}</span>
