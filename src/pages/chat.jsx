@@ -4,6 +4,8 @@ import { Send, PlusCircle, MessageSquare, User, Bot, LogOut, Loader2 } from 'luc
 import '../App.css';
 import { getCurrentUser, signOut, fetchUserAttributes, fetchAuthSession } from 'aws-amplify/auth';
 import ReactMarkdown from 'react-markdown';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
+import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
 const API_URL = import.meta.env.VITE_API_URL;
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -221,7 +223,27 @@ const handleSelectSession = async (sid) => {
                   <div className="sender-name">{msg.role === 'ai' ? 'AI Assistant' : 'You'}</div>
                   <div className="message-text">
                     {msg.role === 'ai'
-                      ? <ReactMarkdown>{msg.content}</ReactMarkdown>
+                      ? <ReactMarkdown
+                          components={{
+                            code({ node, inline, className, children, ...props }) {
+                              const match = /language-(\w+)/.exec(className || '');
+                              return !inline && match ? (
+                                <SyntaxHighlighter
+                                  style={oneDark}
+                                  language={match[1]}
+                                  PreTag="div"
+                                  {...props}
+                                >
+                                  {String(children).replace(/\$/, '')}
+                                </SyntaxHighlighter>
+                              ) : (
+                                <code className={className} {...props}>{children}</code>
+                              )
+                            }
+                          }}
+                        >
+                          {msg.content}
+                        </ReactMarkdown>
                       : msg.content
                     }</div>
                 </div>
