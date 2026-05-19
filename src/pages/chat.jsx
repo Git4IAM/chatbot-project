@@ -6,6 +6,7 @@ import { getCurrentUser, signOut, fetchUserAttributes, fetchAuthSession } from '
 import ReactMarkdown from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import remarkGfm from 'remark-gfm';
 
 const API_URL = import.meta.env.VITE_API_URL;
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -224,6 +225,7 @@ const handleSelectSession = async (sid) => {
                   <div className="message-text">
                     {msg.role === 'ai'
                       ? <ReactMarkdown
+                          remarkPlugins={[remarkGfm]}
                           components={{
                             code({ node, inline, className, children, ...props }) {
                               const match = /language-(\w+)/.exec(className || '');
