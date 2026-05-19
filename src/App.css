@@ -273,6 +273,29 @@ body, html {
   font-style: italic;
 }
 
+/*table render*/
+.message-text table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 8px 0;
+}
+
+.message-text th,
+.message-text td {
+  border: 1px solid #ddd;
+  padding: 8px 12px;
+  text-align: left;
+}
+
+.message-text th {
+  background-color: #f5f5f5;
+  font-weight: 600;
+}
+
+.message-text tr:nth-child(even) {
+  background-color: #fafafa;
+}
+
 /* --- Input Area (Floating Bottom) --- */
 .input-container {
   position: absolute;
