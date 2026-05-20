@@ -109,6 +109,19 @@ const handleRename = async (sid, newTitle) => {
   }
 };
 
+const handldeDelete = async (sid) => {
+  if (!window.confirm('ลบการสนทนานี้?')) return;
+  try {
+    await axios.delete(`${API_BASE_URL}/sessions/${sid}`,
+      { headers: { Authorization: authToken } }
+    );
+    setChatHistory(prev => prev.filter(c => c.sessionId !== sid));
+    if (sessionId == sid) startNewChat();
+  } catch (err) {
+    console.error('Delete error:', err);
+  }
+};
+
   const handleSend = async () => {
     if (!input.trim() || !authToken) return;
     console.log("authToken at send time:", authToken)
