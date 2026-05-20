@@ -204,7 +204,30 @@ const handldeDelete = async (sid) => {
               onClick={() => handleSelectSession(chat.sessionId)}
             >
               <MessageSquare size={16} />
-              <span>{chat.title || 'New Chat'}</span>
+
+              {editingId === chat.sessionId ? (
+                // rename
+                <input
+                  autoFocus
+                  value={editingTitle}
+                  onChange={(e) => setEditingTitle(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') handleRename(chat.sessionId, editingTitle);
+                    if (e.key === 'Escape') setEditingId(null);
+                  }}
+                  onBlur={() => handleRename(chat.sessionId, editingTitle)}
+                  className="rename-input"
+                  onClick={(e) => e.stopPropagation()}
+                />
+                ) : (
+                  <span>{chat.title || 'New Chat'}</span>
+              )}
+              
+              {/* buttom*/}
+              <div className="item-actions" onClick={(e) => e.stopPropagation()}>
+                <button onClick={() => { setEditingId(chat.sessionId); setEditingTitle(chat.title); }}>เปลี่ยนชื่อ</button>
+                <button onClick={() => handldeDelete(chat.sessionId)}>ลบ</button>
+              </div>
             </div>
           ))}
         </div>
