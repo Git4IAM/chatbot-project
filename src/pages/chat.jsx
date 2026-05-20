@@ -35,12 +35,15 @@ function Chat() {
   const [messages, setMessages] = useState([
     { role: 'ai', content: 'สวัสดี AI Assistant พร้อมให้บริการ' }
   ]);
+
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [sessionId, setSessionId] = useState(null); // null = ยังไม่มี session
   const [selectedModel, setSelectedModel] = useState(DEFAULT_MODEL);
   const [chatHistory, setChatHistory] = useState([]);
   const [loadingSessions, setLoadingSessions] = useState(false);
+  const [editindId, setEditingId] = useState(null);//session ที่กำลัง rename
+  const [editingTitle,setEditingTitle] = useState('');//ชื่อที่กำลังพิมพ์
 
   const messagesEndRef = useRef(null);
   useEffect(() => {
@@ -88,6 +91,23 @@ const handleSelectSession = async (sid) => {
     setIsLoading(false);
   }
 }
+
+const handleRename = async (sid, newTitle) => {
+  if (!newTitle.trim()) return;
+  try {
+    await axios.patch(`${API_BASE_URL}/sessions/${sid}`,
+      { title: newTitle },
+      { headers: { Authorization: authToken} }
+    );
+    setChatHistory(prev => prev.map(c => 
+      c.sessionId === sid ? { ...c, title: newTitle} : c
+    ));
+  } catch (err) {
+    console.error('Rename error:', err);
+  } finally {
+    setEditingId(null);
+  }
+};
 
   const handleSend = async () => {
     if (!input.trim() || !authToken) return;
