@@ -42,7 +42,7 @@ function Chat() {
   const [selectedModel, setSelectedModel] = useState(DEFAULT_MODEL);
   const [chatHistory, setChatHistory] = useState([]);
   const [loadingSessions, setLoadingSessions] = useState(false);
-  const [editindId, setEditingId] = useState(null);//session ที่กำลัง rename
+  const [editingId, setEditingId] = useState(null);//session ที่กำลัง rename
   const [editingTitle,setEditingTitle] = useState('');//ชื่อที่กำลังพิมพ์
 
   const messagesEndRef = useRef(null);
@@ -330,7 +330,7 @@ const handldeDelete = async (sid) => {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyPress}
-              placeholder="Message AI..."
+              placeholder="ส่งข้อความเลย..."
               className="main-input"
               disabled={isLoading}
             />

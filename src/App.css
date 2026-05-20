@@ -388,3 +388,45 @@ body, html {
   color: #333 !important;
   -webkit-text-fill-color: #333 !important;
 }
+
+/*rename / delete session*/
+.history-item {
+  position: relative;
+}
+
+.item-actions {
+  display: none;
+  gap: 4px;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.history-item:hover .item-actions{
+  display: flex;
+}
+
+.item-actions button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px 4px;
+  font-size: 12px;
+  border-radius: 4px;
+  color: #666;
+  transition: background 0.2s;
+}
+
+.item-actions button:hover {
+  background-color: #d0d0d0;
+}
+
+.rename-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid #009688;
+  outline: none;
+  font-size: 0.9rem;
+  color: inherit;
+  padding: 0;
+}
