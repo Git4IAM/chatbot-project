@@ -1,8 +1,20 @@
 import { signInWithRedirect } from 'aws-amplify/auth';
-
+import { Hub } from 'aws-amplify/utils';
+import { useState, useEffect } from 'react';
 import imgSrc from '../assets/login-illustration.jpg';
 
 export default function Login() {
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    const unsubcribe = Hub.listen('auth', ({ payload}) => {
+      if (payload.event === 'signInWithRedirect_failure'){
+        setError('ไม่สามารถเข้าสู่ระบบได้ กรุณาใช้ Email ของมหาวิทยาลัย');
+      }
+    });
+    return () => unsubcribe();
+  }, []);
+
   return (
     <div className="login-wrapper">
       <div style={{ display: 'flex', borderRadius: 20, overflow: 'hidden',
@@ -37,6 +49,22 @@ export default function Login() {
             <img src="https://www.google.com/favicon.ico" width={20} height={20} />
             <span style={{ fontWeight: 600, color: '#333' }}>Login with Google</span>
           </button>
+
+          {/*error message*/}
+          {error && (
+            <div style={{
+              marginTop: 16,
+              padding: '10px 14px',
+              backgroundColor: '#fef2f2',
+              border: '1px solid #fecaca',
+              borderRadius: 8,
+              color: '#de2626',
+              fontSize: 13,
+              textAlign: 'center'
+            }}>
+              ⚠️ {error}
+              </div>
+          )}
         </div>
       </div>
     </div>
