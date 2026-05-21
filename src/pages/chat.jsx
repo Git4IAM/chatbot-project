@@ -358,7 +358,7 @@ const handldeDelete = async (sid) => {
             onClick={() => fileInputRef.current.click()}
             disabled={isLoading}
             >
-              <Paperclip size={8} />
+              <Paperclip size={16} />
             </button>
 
             {selectedFile && (

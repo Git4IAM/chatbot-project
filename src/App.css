@@ -430,3 +430,25 @@ body, html {
   color: inherit;
   padding: 0;
 }
+
+.upload-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px 12px;
+  color: #666;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.upload-btn:hover {color: #009688; }
+
+.file-preview {
+  font-size: 0.8rem;
+  color: #009688;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 120px;
+}
