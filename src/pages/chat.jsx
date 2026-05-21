@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
-import { Send, PlusCircle, MessageSquare, User, Bot, LogOut, Loader2 } from 'lucide-react';
+import { Send, PlusCircle, MessageSquare, User, Bot, LogOut, Loader2, Paperclip } from 'lucide-react';
 import '../App.css';
 import { getCurrentUser, signOut, fetchUserAttributes, fetchAuthSession } from 'aws-amplify/auth';
 import ReactMarkdown from 'react-markdown';
@@ -44,6 +44,8 @@ function Chat() {
   const [loadingSessions, setLoadingSessions] = useState(false);
   const [editingId, setEditingId] = useState(null);//session ที่กำลัง rename
   const [editingTitle,setEditingTitle] = useState('');//ชื่อที่กำลังพิมพ์
+  const [selectedFile, setSelectedFile] = useState(null);
+  const fileInputRef = useRef(null);
 
   const messagesEndRef = useRef(null);
   useEffect(() => {
@@ -124,15 +126,34 @@ const handldeDelete = async (sid) => {
 
   const handleSend = async () => {
     if (!input.trim() || !authToken) return;
-    console.log("authToken at send time:", authToken)
+    //console.log("authToken at send time:", authToken)
+
     const userMsg = { role: 'user', content: input };
     setMessages(prev => [...prev, userMsg]);
-    setInput("");
+    setInput('');
     setIsLoading(true);
-    console.log("sending token:", authToken);
+    //console.log("sending token:", authToken);
+    let file_key = null;
+
+    if (selectedFile) {
+      try {
+        const urlRes = await axios.post(`${API_BASE_URL}/upload-url`,
+          { file_key: selectedFile.type, sessionId: sessionId || 'new'},
+          { headers: { Authorization: authToken} }
+        );
+        await axios.put(urlRes.data.upload_url, selectedFile, {
+          headers: { 'Content-Type': selectedFile.type}
+        });
+        file_key = urlRes.data.file_key;
+      } catch (err) {
+        console.error('Upload error:', err)
+      } finally {
+        setSelectedFile(null);
+      }
+    }
+
     try {
-      const res = await axios.post(
-        API_URL,
+      const res = await axios.post(API_URL,
         {
           message: input,
           session_id: sessionId, // null = ให้ Lambda สร้าง session ใหม่
@@ -325,6 +346,25 @@ const handldeDelete = async (sid) => {
 
         <div className="input-container">
           <div className="input-box-wrapper">
+            <input
+            type="file"
+            accept="image/*"
+            ref={fileInputRef}
+            style={{ display: 'none' }}
+            onChange={(e) => setSelectedFile(e.target.files[0])}
+            />
+            <button
+            className="upload-btn"
+            onClick={() => fileInputRef.current.click()}
+            disabled={isLoading}
+            >
+              <Paperclip size={8} />
+            </button>
+
+            {selectedFile && (
+              <span className="file-preview">{selectedFile.name}</span>
+            )}
+            
             <input
               type="text"
               value={input}
