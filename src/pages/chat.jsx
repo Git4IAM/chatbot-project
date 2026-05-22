@@ -125,7 +125,7 @@ const handldeDelete = async (sid) => {
 };
 
   const handleSend = async () => {
-    if (!input.trim() || !authToken) return;
+    if ((!input.trim() && !selectedFile) || !authToken) return;
     //console.log("authToken at send time:", authToken)
 
     const userMsg = { role: 'user', content: input };
@@ -138,7 +138,7 @@ const handldeDelete = async (sid) => {
     if (selectedFile) {
       try {
         const urlRes = await axios.post(`${API_BASE_URL}/upload-url`,
-          { file_key: selectedFile.type, sessionId: sessionId || 'new'},
+          { file_type: selectedFile.type, sessionId: sessionId || 'new'},
           { headers: { Authorization: authToken} }
         );
         await axios.put(urlRes.data.upload_url, selectedFile, {
@@ -157,7 +157,8 @@ const handldeDelete = async (sid) => {
         {
           message: input,
           session_id: sessionId, // null = ให้ Lambda สร้าง session ใหม่
-          model_id: selectedModel
+          model_id: selectedModel,
+          file_key
           // ไม่ส่ง user_id — Lambda ดึงจาก JWT เอง
         },
         {
