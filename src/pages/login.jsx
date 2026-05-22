@@ -7,12 +7,12 @@ export default function Login() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    const unsubcribe = Hub.listen('auth', ({ payload}) => {
+    const unsubscribe = Hub.listen('auth', ({ payload}) => {
       if (payload.event === 'signInWithRedirect_failure'){
         setError('ไม่สามารถเข้าสู่ระบบได้ กรุณาใช้ Email ของมหาวิทยาลัย');
       }
     });
-    return () => unsubcribe();
+    return () => unsubscribe();
   }, []);
 
   return (
