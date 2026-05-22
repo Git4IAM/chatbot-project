@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { Send, PlusCircle, MessageSquare, User, Bot, LogOut, Loader2, Paperclip } from 'lucide-react';
 import '../App.css';
-import { getCurrentUser, signOut, fetchUserAttributes, fetchAuthSession } from 'aws-amplify/auth';
+import { signOut, fetchUserAttributes, fetchAuthSession } from 'aws-amplify/auth';
 import ReactMarkdown from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
@@ -314,7 +314,7 @@ const handldeDelete = async (sid) => {
                                   PreTag="div"
                                   {...props}
                                 >
-                                  {String(children).replace(/\$/, '')}
+                                  {String(children).replace(/\n$/, '')}
                                 </SyntaxHighlighter>
                               ) : (
                                 <code className={className} {...props}>{children}</code>
@@ -375,7 +375,7 @@ const handldeDelete = async (sid) => {
               className="main-input"
               disabled={isLoading}
             />
-            <button onClick={handleSend} disabled={isLoading || !input.trim()} className="send-btn">
+            <button onClick={handleSend} disabled={isLoading || (!input.trim() && !selectedFile)} className="send-btn">
               <Send size={18} />
             </button>
           </div>
