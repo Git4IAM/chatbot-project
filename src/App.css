@@ -12,6 +12,38 @@ body, html {
   color: #000000; /* Default text black */
 }
 
+/* --- Scrollbar Theme --- */
+:root {
+  --scrollbar-track: #edf2f1;
+  --scrollbar-thumb: #9fb8b2;
+  --scrollbar-thumb-hover: #7f9f97;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+}
+
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+*::-webkit-scrollbar-track {
+  background: var(--scrollbar-track);
+  border-radius: 999px;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #aac0bb 0%, var(--scrollbar-thumb) 100%);
+  border-radius: 999px;
+  border: 2px solid var(--scrollbar-track);
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
+}
+
 /* --- Layout Structure --- */
 .app-layout {
   display: flex;
