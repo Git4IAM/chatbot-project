@@ -389,11 +389,17 @@ body, html {
   width: 100%;
   max-width: 800px;
   background-color: white;
-  border: 1px solid #d9d9e3;
+  border: 1px solid #bcd5d0;
   border-radius: 12px;
-  box-shadow: 0 0 10px rgba(0,0,0,0.05);
+  box-shadow: 0 6px 18px rgba(15, 118, 110, 0.08);
   display: flex;
   align-items: center;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.input-box-wrapper:focus-within {
+  border-color: #0f766e;
+  box-shadow: 0 8px 22px rgba(15, 118, 110, 0.14);
 }
 
 .main-input {
