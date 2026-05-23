@@ -111,7 +111,7 @@ const handleRename = async (sid, newTitle) => {
   }
 };
 
-const handldeDelete = async (sid) => {
+const handledeDelete = async (sid) => {
   if (!window.confirm('ลบการสนทนานี้?')) return;
   try {
     await axios.delete(`${API_BASE_URL}/sessions/${sid}`,
@@ -248,7 +248,7 @@ const handldeDelete = async (sid) => {
               {/* buttom*/}
               <div className="item-actions" onClick={(e) => e.stopPropagation()}>
                 <button onClick={() => { setEditingId(chat.sessionId); setEditingTitle(chat.title); }}>เปลี่ยนชื่อ</button>
-                <button onClick={() => handldeDelete(chat.sessionId)}>ลบ</button>
+                <button onClick={() => handledeDelete(chat.sessionId)}>ลบ</button>
               </div>
             </div>
           ))}
