@@ -222,6 +222,48 @@ body, html {
   font-weight: 400;
 }
 
+.model-dropdown {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  min-width: 240px;
+  border: 1px solid #b8d7d1;
+  border-radius: 10px;
+  background-color: #ffffff;
+  color: #0f4d46;
+  padding: 8px 36px 8px 12px;
+  font-size: 0.92rem;
+  font-weight: 600;
+  line-height: 1.2;
+  cursor: pointer;
+  box-shadow: none;
+  transition: border-color 0.2s, background-color 0.2s;
+  background-image:
+    linear-gradient(45deg, transparent 50%, #0f766e 50%),
+    linear-gradient(135deg, #0f766e 50%, transparent 50%);
+  background-position:
+    calc(100% - 18px) calc(50% - 2px),
+    calc(100% - 12px) calc(50% - 2px);
+  background-size: 6px 6px, 6px 6px;
+  background-repeat: no-repeat;
+}
+
+.model-dropdown:hover {
+  border-color: #97bdb7;
+  background-color: #ffffff;
+}
+
+.model-dropdown:focus {
+  outline: none;
+  border-color: #0f766e;
+  box-shadow: 0 0 0 2px rgba(15, 118, 110, 0.14);
+}
+
+.model-dropdown option {
+  color: #1f2937;
+  font-weight: 500;
+}
+
 .model-name {
   font-weight: 600; /* ตัวหนาสำหรับชื่อรุ่น */
   color: #009688; /* สีเขียว Viridian ให้ดูเด่น */
@@ -400,6 +442,7 @@ body, html {
   .chat-container { padding: 0 16px; }
   .chat-row { gap: 12px; padding: 20px 0; }
   .icon-box { width: 30px; height: 30px; }
+  .model-dropdown { min-width: 190px; font-size: 0.88rem; }
 }
 
 /* --- Login Page Override --- */
