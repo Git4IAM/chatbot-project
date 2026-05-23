@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { getCurrentUser } from 'aws-amplify/auth';
 import { Hub } from 'aws-amplify/utils';
@@ -6,6 +6,7 @@ import Login from './pages/login';
 import Chat from './pages/chat';
 
 function App() {
+  const location = useLocation();
   const [isAuthenticated, setIsAuthenticated] = useState(null);
 
   useEffect(() => {
@@ -61,7 +62,14 @@ function App() {
           ? <Chat /> : <Navigate to="/login" />
       }/>
       <Route path="*" element={
-        <Navigate to={isAuthenticated ? "/chat" : "/login"} />
+        <Navigate
+          to={
+            isAuthenticated
+              ? "/chat"
+              : `/login${location.search}${location.hash}`
+          }
+          replace
+        />
       }/>
     </Routes>
   );
