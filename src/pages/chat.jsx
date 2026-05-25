@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+﻿import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { Send, PlusCircle, MessageSquare, User, Bot, LogOut, Loader2, Paperclip } from 'lucide-react';
 import '../App.css';
@@ -18,16 +18,25 @@ function Chat() {
 
   useEffect(() => {
     const loadUser = async () => {
-      const attrs = await fetchUserAttributes();
-      console.log(attrs)
-      setDisplayName(attrs.name || attrs.email.split('@')[0]);
+      try {
+        const attrs = await fetchUserAttributes();
+        setDisplayName(attrs.name || attrs.email?.split('@')[0] || '');
 
-      // ดึง JWT token จาก Cognito session
-      const session = await fetchAuthSession();
-      const token = session.tokens?.idToken?.toString();
-      console.log(token);
-      setAuthToken(token);
-      await loadSessions(token);
+        // ดึง JWT token จาก Cognito session
+        const session = await fetchAuthSession();
+        const token = session.tokens?.idToken?.toString() || '';
+
+        if (!token) {
+          throw new Error('Missing auth token from session');
+        }
+
+        setAuthToken(token);
+        await loadSessions(token);
+      } catch (err) {
+        console.error('Auth bootstrap error:', err);
+        setDisplayName('');
+        setAuthToken('');
+      }
     };
     loadUser();
   }, []);
@@ -111,7 +120,7 @@ const handleRename = async (sid, newTitle) => {
   }
 };
 
-const handledeDelete = async (sid) => {
+const handleDelete = async (sid) => {
   if (!window.confirm('ลบการสนทนานี้?')) return;
   try {
     await axios.delete(`${API_BASE_URL}/sessions/${sid}`,
@@ -168,7 +177,7 @@ const handledeDelete = async (sid) => {
         }
       );
 
-      // ถ้าเป็น session ใหม่ → เซฟ session_id ที่ได้จาก    Lambda
+      // ถ้าเป็น session ใหม่ -> เซฟ session_id ที่ได้จาก Lambda
       if (res.data.is_new_session) {
         setSessionId(res.data.session_id);
         setChatHistory(prev => [
@@ -248,7 +257,7 @@ const handledeDelete = async (sid) => {
               {/* buttom*/}
               <div className="item-actions" onClick={(e) => e.stopPropagation()}>
                 <button onClick={() => { setEditingId(chat.sessionId); setEditingTitle(chat.title); }}>เปลี่ยนชื่อ</button>
-                <button onClick={() => handledeDelete(chat.sessionId)}>ลบ</button>
+                <button onClick={() => handleDelete(chat.sessionId)}>ลบ</button>
               </div>
             </div>
           ))}
