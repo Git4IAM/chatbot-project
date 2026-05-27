@@ -54,12 +54,42 @@ function Chat() {
   const [editingId, setEditingId] = useState(null);//session ที่กำลัง rename
   const [editingTitle,setEditingTitle] = useState('');//ชื่อที่กำลังพิมพ์
   const [selectedFile, setSelectedFile] = useState(null);
+  const [selectedFilePreviewUrl, setSelectedFilePreviewUrl] = useState(null);
   const fileInputRef = useRef(null);
 
   const messagesEndRef = useRef(null);
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  useEffect(() => {
+    return () => {
+      if (selectedFilePreviewUrl) {
+        URL.revokeObjectURL(selectedFilePreviewUrl);
+      }
+    };
+  }, [selectedFilePreviewUrl]);
+
+  const clearSelectedFile = () => {
+    if (selectedFilePreviewUrl) {
+      URL.revokeObjectURL(selectedFilePreviewUrl);
+    }
+    setSelectedFile(null);
+    setSelectedFilePreviewUrl(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (selectedFilePreviewUrl) {
+      URL.revokeObjectURL(selectedFilePreviewUrl);
+    }
+    setSelectedFile(file);
+    setSelectedFilePreviewUrl(URL.createObjectURL(file));
+  };
 
   const startNewChat = () => {
     setSessionId(null); // reset Lambda จะสร้าง session ใหม่
@@ -137,34 +167,50 @@ const handleDelete = async (sid) => {
     if ((!input.trim() && !selectedFile) || !authToken) return;
     //console.log("authToken at send time:", authToken)
 
-    const userMsg = { role: 'user', content: input };
+    const pendingInput = input;
+    const pendingFile = selectedFile;
+    const pendingPreviewUrl = selectedFilePreviewUrl;
+
+    const userMsg = { role: 'user', content: pendingInput };
+    if (pendingPreviewUrl) {
+      userMsg.imageUrl = pendingPreviewUrl;
+    }
     setMessages(prev => [...prev, userMsg]);
     setInput('');
+    setSelectedFile(null);
+    setSelectedFilePreviewUrl(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
     setIsLoading(true);
     //console.log("sending token:", authToken);
     let file_key = null;
 
-    if (selectedFile) {
+    if (pendingFile) {
       try {
         const urlRes = await axios.post(`${API_BASE_URL}/upload-url`,
-          { file_type: selectedFile.type, sessionId: sessionId || 'new'},
+          { file_type: pendingFile.type, sessionId: sessionId || 'new'},
           { headers: { Authorization: authToken} }
         );
-        await axios.put(urlRes.data.upload_url, selectedFile, {
-          headers: { 'Content-Type': selectedFile.type}
+        await axios.put(urlRes.data.upload_url, pendingFile, {
+          headers: { 'Content-Type': pendingFile.type}
         });
         file_key = urlRes.data.file_key;
       } catch (err) {
-        console.error('Upload error:', err)
-      } finally {
-        setSelectedFile(null);
+        console.error('Upload error:', err);
+        setMessages(prev => [...prev, { role: 'ai', content: 'อัปโหลดรูปไม่สำเร็จ กรุณาลองใหม่อีกครั้ง' }]);
+        setIsLoading(false);
+        if (pendingPreviewUrl) {
+          URL.revokeObjectURL(pendingPreviewUrl);
+        }
+        return;
       }
     }
 
     try {
       const res = await axios.post(API_URL,
         {
-          message: input,
+          message: pendingInput,
           session_id: sessionId, // null = ให้ Lambda สร้าง session ใหม่
           model_id: selectedModel,
           file_key
@@ -192,6 +238,9 @@ const handleDelete = async (sid) => {
       console.error("Error:", error);
       setMessages(prev => [...prev, { role: 'ai', content: 'ขออภัย ระบบขัดข้องชั่วคราว' }]);
     } finally {
+      if (pendingPreviewUrl) {
+        URL.revokeObjectURL(pendingPreviewUrl);
+      }
       setIsLoading(false);
     }
   };
@@ -333,7 +382,18 @@ const handleDelete = async (sid) => {
                         >
                           {msg.content}
                         </ReactMarkdown>
-                      : msg.content
+                      : (
+                        <>
+                          {msg.imageUrl && (
+                            <img
+                              src={msg.imageUrl}
+                              alt="uploaded"
+                              className="message-image"
+                            />
+                          )}
+                          {msg.content}
+                        </>
+                      )
                     }</div>
                 </div>
               </div>
@@ -361,7 +421,7 @@ const handleDelete = async (sid) => {
             accept="image/*"
             ref={fileInputRef}
             style={{ display: 'none' }}
-            onChange={(e) => setSelectedFile(e.target.files[0])}
+            onChange={handleFileChange}
             />
             <button
             className="upload-btn"
@@ -372,7 +432,23 @@ const handleDelete = async (sid) => {
             </button>
 
             {selectedFile && (
-              <span className="file-preview">{selectedFile.name}</span>
+              <span className="file-preview">
+                {selectedFilePreviewUrl && (
+                  <img
+                    src={selectedFilePreviewUrl}
+                    alt="preview"
+                    className="file-preview-image"
+                  />
+                )}
+                <button
+                  type="button"
+                  onClick={clearSelectedFile}
+                  className="file-preview-remove"
+                  aria-label="Remove selected image"
+                >
+                  ยกเลิก
+                </button>
+              </span>
             )}
             
             <input
