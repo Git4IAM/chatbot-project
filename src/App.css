@@ -526,10 +526,75 @@ body, html {
 .upload-btn:hover {color: #009688; }
 
 .file-preview {
-  font-size: 0.8rem;
-  color: #009688;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 120px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 320px;
+  min-width: 0;
+  padding: 6px 8px;
+  border-radius: 10px;
+  background-color: #eef7f5;
+  border: 1px solid #d4ebe6;
+}
+
+.file-preview-image {
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.file-preview-remove {
+  border: none;
+  background: #ffffff;
+  color: #0f766e;
+  font-size: 0.78rem;
+  font-weight: 600;
+  border-radius: 999px;
+  padding: 4px 10px;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.file-preview-remove:hover {
+  background-color: #d4ebe6;
+  color: #0b5d56;
+}
+
+.file-preview-remove:focus-visible {
+  outline: 2px solid #0f766e;
+  outline-offset: 2px;
+}
+
+.message-image {
+  display: block;
+  width: min(320px, 100%);
+  max-height: 320px;
+  object-fit: cover;
+  border-radius: 10px;
+  margin-bottom: 10px;
+  border: 1px solid #e5e7eb;
+}
+
+@media (max-width: 768px) {
+  .file-preview {
+    max-width: 230px;
+  }
+
+  .file-preview-image {
+    width: 36px;
+    height: 36px;
+  }
+
+  .file-preview-remove {
+    padding: 3px 8px;
+    font-size: 0.74rem;
+  }
+
+  .message-image {
+    width: min(240px, 100%);
+    max-height: 240px;
+  }
 }
