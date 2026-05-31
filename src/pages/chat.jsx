@@ -12,6 +12,13 @@ const API_URL = import.meta.env.VITE_API_URL;
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 const DEFAULT_MODEL = "us.amazon.nova-2-lite-v1:0";
 
+const PROMPT_GUIDES = [
+  { icon: '📝', label: 'สรุปบทเรียน', text: 'ช่วยสรุปเนื้อหาต่อไปนี้ให้กระชับ: ' },
+  { icon: '💻', label: 'ช่วยเขียนโค้ด', text: 'ช่วยเขียนโค้ดสำหรับ: ' },
+  { icon: '🌐', label: 'แปลภาษา', text: 'แปลข้อความต่อไปนี้เป็นภาษาอังกฤษ: ' },
+  { icon: '✍️', label: 'ตรวจงานเขียน', text: 'ช่วยตรวจและแก้ไขงานเขียนต่อไปนี้: ' },
+];
+
 function Chat() {
   const [displayName, setDisplayName] = useState('');
   const [authToken, setAuthToken] = useState(''); // เก็บ JWT token
@@ -344,6 +351,19 @@ const handleDelete = async (sid) => {
               <option value="us.amazon.nova-2-lite-v1:0">Amazon Nova 2 Lite (Balanced)</option>
               <option value="us.amazon.nova-pro-v1:0">Amazon Nova Pro (Reason)</option>
             </select>
+          </div>
+        </div>
+
+        {/* Prompt Guide — แสดงตลอดเวลา */}
+        <div className="prompt-guide">
+          <div className="prompt-grid">
+            {PROMPT_GUIDES.map((p, i) => (
+              <div key={i} className="prompt-card"
+                onClick={() => setInput(p.text)}>
+                <span className="prompt-icon">{p.icon}</span>
+                <span>{p.label}</span>
+              </div>
+            ))}
           </div>
         </div>
 
