@@ -221,7 +221,8 @@ const handleDelete = async (sid) => {
           message: pendingInput,
           session_id: sessionId, // null = ให้ Lambda สร้าง session ใหม่
           model_id: selectedModel,
-          file_key
+          file_key,
+          web_search: webSearch
           // ไม่ส่ง user_id — Lambda ดึงจาก JWT เอง
         },
         {
