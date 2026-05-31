@@ -638,3 +638,7 @@ body, html {
 .prompt-icon {
   font-size: 1rem;
 }
+
+.web-search-active {
+  color: #009688;
+}

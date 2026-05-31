@@ -1,6 +1,6 @@
 ﻿import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
-import { Send, PlusCircle, MessageSquare, User, Bot, LogOut, Loader2, Paperclip } from 'lucide-react';
+import { Send, PlusCircle, MessageSquare, User, Bot, LogOut, Loader2, Paperclip, Globe } from 'lucide-react';
 import '../App.css';
 import { signOut, fetchUserAttributes, fetchAuthSession } from 'aws-amplify/auth';
 import ReactMarkdown from 'react-markdown';
@@ -63,6 +63,7 @@ function Chat() {
   const [selectedFile, setSelectedFile] = useState(null);
   const [selectedFilePreviewUrl, setSelectedFilePreviewUrl] = useState(null);
   const fileInputRef = useRef(null);
+  const [webSearch, setWebSearch] = useState(false);
 
   const messagesEndRef = useRef(null);
   useEffect(() => {
@@ -447,8 +448,18 @@ const handleDelete = async (sid) => {
             className="upload-btn"
             onClick={() => fileInputRef.current.click()}
             disabled={isLoading}
+            title={'แนบไฟล์'}
             >
               <Paperclip size={16} />
+            </button>
+
+            <button
+              className={`upload-btn ${webSearch ? 'web-search-active' : ''}`}
+              onClick={() => setWebSearch(prev => !prev)}
+              disabled={isLoading}
+              title={webSearch ? 'Web Search เปิดอยู่' : 'เปิด Web Search'}  
+            >
+              <Globe size={16} />
             </button>
 
             {selectedFile && (
