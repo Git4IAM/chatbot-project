@@ -12,6 +12,13 @@ const API_URL = import.meta.env.VITE_API_URL;
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 const DEFAULT_MODEL = "us.amazon.nova-2-lite-v1:0";
 
+// timestamps
+const formatTime = (isoString) => {
+  if (!isoString) return '';
+  const date = new Date(isoString);
+  return date.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+};
+
 const PROMPT_GUIDES = [
   { icon: '📝', label: 'สรุปบทเรียน', text: 'ช่วยสรุปเนื้อหาต่อไปนี้ให้กระชับ: ' },
   { icon: '💻', label: 'ช่วยเขียนโค้ด', text: 'ช่วยเขียนโค้ดสำหรับ: ' },
@@ -131,7 +138,8 @@ const handleSelectSession = async (sid) => {
     const loaded = (res.data.messages || []).map((m) => ({
       role: m.role === 'assistant' ? 'ai' : 'user',
       content: m.content,
-      imageUrl: m.image_url || null
+      imageUrl: m.image_url || null,
+      createdAt: m.createdAt
     }));
     setMessages(loaded.length > 0 ? loaded : [{ role: 'ai', content: 'ไม่พบประวัติการสนทนา' }]);
   } catch (err) {
@@ -180,7 +188,7 @@ const handleDelete = async (sid) => {
     const pendingFile = selectedFile;
     const pendingPreviewUrl = selectedFilePreviewUrl;
 
-    const userMsg = { role: 'user', content: pendingInput };
+    const userMsg = { role: 'user', content: pendingInput, createdAt: new Date().toISOString() };
     if (pendingPreviewUrl) {
       userMsg.imageUrl = pendingPreviewUrl;
     }
@@ -237,12 +245,12 @@ const handleDelete = async (sid) => {
       if (res.data.is_new_session) {
         setSessionId(res.data.session_id);
         setChatHistory(prev => [
-          { sessionId: res.data.session_id, title: input.slice(0, 40) || 'New Chat' },
+          { sessionId: res.data.session_id, title: input.slice(0, 40) },
           ...prev
         ]);
       }
 
-      setMessages(prev => [...prev, { role: 'ai', content: res.data.reply }]);
+      setMessages(prev => [...prev, { role: 'ai', content: res.data.reply, createdAt: new Date().toISOString() }]);
 
     } catch (error) {
       console.error("Error:", error);
@@ -417,7 +425,17 @@ const handleDelete = async (sid) => {
                           {msg.content}
                         </>
                       )
-                    }</div>
+                    }
+                    <div style={{ 
+                      fontSize: '0.7rem', 
+                      color: msg.role === 'ai' ? '#888' : '#888', // สีกลืนไปกับพื้นหลัง
+                      textAlign: 'right', // ชิดขวา
+                      marginTop: '6px',
+                      opacity: 0.8 // ทำให้อ่อนลงหน่อย จะได้ไม่แย่งซีนข้อความหลัก
+                    }}>
+                      {formatTime(msg.createdAt)}
+                    </div>
+                  </div>
                 </div>
               </div>
             ))}
