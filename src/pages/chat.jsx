@@ -130,7 +130,8 @@ const handleSelectSession = async (sid) => {
     });
     const loaded = (res.data.messages || []).map((m) => ({
       role: m.role === 'assistant' ? 'ai' : 'user',
-      content: m.content
+      content: m.content,
+      imageUrl: m.image_url || null
     }));
     setMessages(loaded.length > 0 ? loaded : [{ role: 'ai', content: 'ไม่พบประวัติการสนทนา' }]);
   } catch (err) {
