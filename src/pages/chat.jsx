@@ -381,7 +381,7 @@ const handleDelete = async (sid) => {
         <div className="chat-scroll-area">
           <div className="chat-container">
             {messages.map((msg, index) => (
-              <div key={index} className={`chat-row ${msg.role === 'ai' ? 'ai-row' : ''}`}>
+              <div key={index} className={`chat-row ${msg.role === 'ai' ? 'ai-row' : 'user-row'}`}>
                 <div className="row-avatar">
                   {msg.role === 'ai'
                     ? <div className="icon-box ai-icon"><Bot size={24} /></div>
