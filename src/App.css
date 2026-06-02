@@ -670,3 +670,38 @@ body, html {
   color: black;
   border-radius: 18px 18px 4px 18px; 
 }
+
+/* --- ปรับแต่ง Markdown ในกล่องแชทให้พอดี ไม่ใหญ่เกินไป --- */
+
+/* 1. จัดการหัวข้อ H1, H2, H3 ให้มีขนาดเท่าตัวอักษรปกติ (แต่ทำเป็นตัวหนา) */
+.message-text h1, 
+.message-text h2, 
+.message-text h3, 
+.message-text h4 {
+  font-size: 1.05rem; /* ขนาดใหญ่กว่าอักษรปกตินิดเดียว */
+  font-weight: 700;
+  margin: 12px 0 4px 0; /* ลดช่องว่างด้านบนและล่าง */
+  line-height: 1.4;
+}
+
+/* 2. ลดช่องว่างระหว่างย่อหน้า (Paragraph) */
+.message-text p {
+  margin: 0 0 12px 0; /* ให้มีระยะห่างแค่ด้านล่างนิดหน่อย */
+}
+
+/* 3. จัดการระยะห่างของ Bullet / List ให้ดูคอมแพคขึ้น */
+.message-text ul, 
+.message-text ol {
+  margin: 4px 0 12px 0;
+  padding-left: 24px; /* ขยับจุดไข่ปลาให้เข้ามาพอดีกับข้อความ */
+}
+
+.message-text li {
+  margin-bottom: 6px; /* ระยะห่างระหว่างแต่ละข้อ */
+}
+
+/* 4. ป้องกันไม่ให้บรรทัดสุดท้ายมีช่องว่างเหลือทิ้ง */
+.message-text p:last-child,
+.message-text ul:last-child {
+  margin-bottom: 0;
+}
