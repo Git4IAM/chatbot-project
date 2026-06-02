@@ -86,7 +86,7 @@ const AdminDashboard = () => {
               alignItems: "center",
             }}
           >
-            <h2>👥 ระบบจัดการผู้ใช้งาน (Admin Dashboard)</h2>
+            <h2>ระบบจัดการผู้ใช้งาน (Admin Dashboard)</h2>
             <button
               onClick={() => navigate("/chat")}
               style={{
@@ -98,77 +98,84 @@ const AdminDashboard = () => {
                 cursor: "pointer",
               }}
             >
-              🔙 กลับหน้าแชท
+              กลับหน้าแชท
             </button>
           </div>
 
-          <table
-            style={{
-              width: "100%",
-              borderCollapse: "collapse",
-              marginTop: "20px",
-            }}
-          ></table>
+          <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '20px' }}>
+                        <thead>
+                            <tr style={{ backgroundColor: '#f4f4f4', textAlign: 'left' }}>
+                                <th style={{ padding: '12px', borderBottom: '2px solid #ddd' }}>อีเมล (Email)</th>
+                                <th style={{ padding: '12px', borderBottom: '2px solid #ddd' }}>โดเมน</th>
+                                <th style={{ padding: '12px', borderBottom: '2px solid #ddd' }}>สิทธิ์ (Role)</th>
+                                <th style={{ padding: '12px', borderBottom: '2px solid #ddd' }}>สถานะ</th>
+                                <th style={{ padding: '12px', borderBottom: '2px solid #ddd' }}>จัดการ</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {users.map((user, index) => (
+                                <tr key={index} style={{ borderBottom: '1px solid #eee' }}>
+                                    <td style={{ padding: '12px' }}>{user.email}</td>
+                                    
+                                    {/* คอลัมน์โดเมน (ใหม่) */}
+                                    <td style={{ padding: '12px' }}>
+                                        <span style={{ backgroundColor: '#e0e7ff', color: '#3730a3', padding: '4px 8px', borderRadius: '4px', fontSize: '0.9em' }}>
+                                            {user.domain}
+                                        </span>
+                                    </td>
 
-          <table
-            style={{
-              width: "100%",
-              borderCollapse: "collapse",
-              marginTop: "20px",
-            }}
-          >
-            <thead>
-              <tr style={{ backgroundColor: "#f4f4f4", textAlign: "left" }}>
-                <th style={{ padding: "12px", borderBottom: "2px solid #ddd" }}>
-                  อีเมล (Email)
-                </th>
-                <th style={{ padding: "12px", borderBottom: "2px solid #ddd" }}>
-                  วันที่สมัคร
-                </th>
-                <th style={{ padding: "12px", borderBottom: "2px solid #ddd" }}>
-                  สถานะ
-                </th>
-                <th style={{ padding: "12px", borderBottom: "2px solid #ddd" }}>
-                  จัดการ
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {users.map((user, index) => (
-                <tr key={index} style={{ borderBottom: "1px solid #eee" }}>
-                  <td style={{ padding: "12px" }}>{user.email}</td>
-                  <td style={{ padding: "12px" }}>{user.created_at}</td>
-                  <td style={{ padding: "12px" }}>
-                    {user.enabled ? (
-                      <span style={{ color: "green", fontWeight: "bold" }}>
-                        ✅ ใช้งานอยู่
-                      </span>
-                    ) : (
-                      <span style={{ color: "red", fontWeight: "bold" }}>
-                        ❌ ถูกระงับ
-                      </span>
-                    )}
-                  </td>
-                  <td style={{ padding: "12px" }}>
-                    {/* ปุ่มนี้เดี๋ยวเรามาเขียนฟังก์ชันเชื่อม API ระงับสิทธิ์ทีหลังครับ */}
-                    <button
-                      onClick={() => toggleStatus(user.username, user.enabled)}
-                      style={{
-                        padding: "6px 12px",
-                        backgroundColor: user.enabled ? "#ff4d4f" : "#52c41a",
-                        color: "white",
-                        border: "none",
-                        borderRadius: "4px",
-                        cursor: "pointer",
-                      }}
-                    >
-                      {user.enabled ? "ระงับสิทธิ์" : "ปลดล็อก"}
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                                    {/* คอลัมน์สิทธิ์ (ใหม่) */}
+                                    <td style={{ padding: '12px' }}>
+                                        {user.is_admin ? (
+                                            <span style={{ color: '#d97706', fontWeight: 'bold' }}>Admin</span>
+                                        ) : (
+                                            <span style={{ color: '#4b5563' }}> User</span>
+                                        )}
+                                    </td>
+
+                                    <td style={{ padding: '12px' }}>
+                                        {user.enabled ? (
+                                            <span style={{ color: 'green', fontWeight: 'bold' }}>ใช้งานอยู่</span>
+                                        ) : (
+                                            <span style={{ color: 'red', fontWeight: 'bold' }}>ถูกระงับ</span>
+                                        )}
+                                    </td>
+                                    <td style={{ padding: '12px', display: 'flex', gap: '8px' }}>
+                                        
+                                        {/* ปุ่มตั้งเป็นแอดมิน (เตรียมไว้ก่อน) */}
+                                        <button
+                                            style={{
+                                                padding: '6px 12px',
+                                                backgroundColor: user.is_admin ? '#9ca3af' : '#f59e0b',
+                                                color: 'white',
+                                                border: 'none',
+                                                borderRadius: '4px',
+                                                cursor: user.is_admin ? 'not-allowed' : 'pointer'
+                                            }}
+                                            disabled={user.is_admin}
+                                        >
+                                            {user.is_admin ? 'เป็น Admin แล้ว' : 'ตั้งเป็น Admin'}
+                                        </button>
+
+                                        {/* ปุ่มระงับสิทธิ์รายคน (ของเดิม) */}
+                                        <button
+                                            onClick={() => toggleStatus(user.username, user.enabled)}
+                                            style={{
+                                                padding: '6px 12px',
+                                                backgroundColor: user.enabled ? '#ff4d4f' : '#52c41a',
+                                                color: 'white',
+                                                border: 'none',
+                                                borderRadius: '4px',
+                                                cursor: 'pointer'
+                                            }}
+                                        >
+                                            {user.enabled ? 'ระงับการใช้' : 'ปลดล็อก'}
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
         </div>
       </div>
     </div>
