@@ -1,6 +1,6 @@
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { getCurrentUser, fetchUserAttributes } from 'aws-amplify/auth';
+import { getCurrentUser, fetchAuthSession } from 'aws-amplify/auth';
 import { Hub } from 'aws-amplify/utils';
 
 import Login from './pages/login';
@@ -17,7 +17,7 @@ function App() {
       try {
         await getCurrentUser();
         const session = await fetchAuthSession();
-        const groups = session.token?.accessToken?.payload['cognito:groups'] || session.token?.idToken?.payload['cognito:groups'] || [];
+        const groups = session.tokens?.accessToken?.payload['cognito:groups'] || session.tokens?.idToken?.payload['cognito:groups'] || [];
         setIsAdmin(groups.includes('Admin'));
 
         setIsAuthenticated(true);
@@ -72,7 +72,7 @@ function App() {
       }/>
       <Route path="/chat" element={
         isAuthenticated 
-          ? <Chat /> : <Navigate to="/login" />
+          ? <Chat isAdmin={isAdmin}/> : <Navigate to="/login" />
       }/>
       <Route path="/admin" element={
         // เงื่อนไข: ต้องล็อกอินแล้ว และ ต้องเป็น Admin ด้วย ถึงจะเข้าได้
@@ -95,11 +95,3 @@ function App() {
 }
 
 export default App;
-/*
-**ลำดับการทำ**
-
-1. แก้ App.jsx (เดิม) → บันทึก → ย้ายเป็น pages/Chat.jsx
-2. สร้าง App.jsx ใหม่ (Router ด้านบน)
-3. สร้าง pages/Login.jsx
-4. สร้าง aws-config.js
-5. แก้ main.jsx*/
