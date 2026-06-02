@@ -1,6 +1,7 @@
 ﻿import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
-import { Send, PlusCircle, MessageSquare, User, Bot, LogOut, Loader2, Paperclip, Globe } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Send, PlusCircle, MessageSquare, User, Bot, LogOut, Loader2, Paperclip, Globe, Settings } from 'lucide-react';
 import '../App.css';
 import { signOut, fetchUserAttributes, fetchAuthSession } from 'aws-amplify/auth';
 import ReactMarkdown from 'react-markdown';
@@ -26,7 +27,8 @@ const PROMPT_GUIDES = [
   { icon: '✍️', label: 'ตรวจงานเขียน', text: 'ช่วยตรวจและแก้ไขงานเขียนต่อไปนี้: ' },
 ];
 
-function Chat() {
+function Chat({isAdmin}) {
+  const navigate = useNavigate(); // change page
   const [displayName, setDisplayName] = useState('');
   const [authToken, setAuthToken] = useState(''); // เก็บ JWT token
 
@@ -347,7 +349,7 @@ const handleDelete = async (sid) => {
 
       {/* --- MAIN CONTENT --- */}
       <div className="main-content">
-        <div className="top-bar">
+        <div className="top-bar" style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%'}}>
           {/* Model Switcher */}
           <div className="model-selector">
             <span className="model-label">Model: </span>
@@ -363,6 +365,26 @@ const handleDelete = async (sid) => {
               <option value="us.amazon.nova-pro-v1:0">Amazon Nova Pro (Reason)</option>
             </select>
           </div>
+          {isAdmin && (
+            <button 
+              onClick={() => navigate('/admin')} 
+              style={{ 
+                marginLeft: 'auto', // 👈 คำสั่งนี้จะดันปุ่มไปชิดขวาสุด
+                padding: '8px 16px', 
+                backgroundColor: '#4f46e5', 
+                color: 'white', 
+                border: 'none',
+                borderRadius: '6px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                cursor: 'pointer'
+              }}
+            >
+              <Settings size={16} />
+              <span>ระบบจัดการ (Admin)</span>
+            </button>
+          )}
         </div>
 
         {/* Prompt Guide — แสดงตลอดเวลา */}
