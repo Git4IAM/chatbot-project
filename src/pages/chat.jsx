@@ -245,7 +245,7 @@ const handleDelete = async (sid) => {
       if (res.data.is_new_session) {
         setSessionId(res.data.session_id);
         setChatHistory(prev => [
-          { sessionId: res.data.session_id, title: input.slice(0, 40) },
+          { sessionId: res.data.session_id, title: pendingInput.slice(0, 40) || 'New Chat'},
           ...prev
         ]);
       }
