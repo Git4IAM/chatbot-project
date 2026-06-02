@@ -1,21 +1,29 @@
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { getCurrentUser } from 'aws-amplify/auth';
+import { getCurrentUser, fetchUserAttributes } from 'aws-amplify/auth';
 import { Hub } from 'aws-amplify/utils';
+
 import Login from './pages/login';
 import Chat from './pages/chat';
+import AdminDashboard from './pages/AdminDashboard';
 
 function App() {
   const location = useLocation();
   const [isAuthenticated, setIsAuthenticated] = useState(null);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     const checkAuth = async () => {
       try {
         await getCurrentUser();
+        const session = await fetchAuthSession();
+        const groups = session.token?.accessToken?.payload['cognito:groups'] || session.token?.idToken?.payload['cognito:groups'] || [];
+        setIsAdmin(groups.includes('Admin'));
+
         setIsAuthenticated(true);
       } catch {
         setIsAuthenticated(false);
+        setIsAdmin(false);
     }
   };
 
@@ -31,6 +39,10 @@ function App() {
           setTimeout(async () => {
             try {
               await getCurrentUser();
+              const session = await fetchAuthSession();
+              const groups = session.tokens?.accessToken?.payload['cognito:groups'] || session.tokens?.idToken?.payload['cognito:groups'] || [];
+              
+              setIsAdmin(groups.includes('Admin'));
               setIsAuthenticated(true);
             } catch (e) {
               //console.log(e);
@@ -39,6 +51,7 @@ function App() {
           break;
         case 'signedOut':
           setIsAuthenticated(false);
+          setIsAdmin(false);
           break;
         case 'signInWithRedirect_failure':
           console.log('Failed:', payload);
@@ -60,6 +73,12 @@ function App() {
       <Route path="/chat" element={
         isAuthenticated 
           ? <Chat /> : <Navigate to="/login" />
+      }/>
+      <Route path="/admin" element={
+        // เงื่อนไข: ต้องล็อกอินแล้ว และ ต้องเป็น Admin ด้วย ถึงจะเข้าได้
+        isAuthenticated && isAdmin 
+          ? <AdminDashboard /> 
+          : <Navigate to="/chat" /> // ถ้าไม่ใช่ Admin ให้เด้งกลับไปหน้าแชทปกติ
       }/>
       <Route path="*" element={
         <Navigate
