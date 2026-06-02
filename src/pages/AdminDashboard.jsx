@@ -29,6 +29,31 @@ const AdminDashboard = ({ token }) => {
     }
   };
 
+  // ฟังก์ชันสำหรับกดปุ่มระงับ/ปลดล็อก
+  const toggleStatus = async (username, currentStatus) => {
+    // ถามย้ำเพื่อความแน่ใจ
+    const confirmMsg = currentStatus ? "คุณต้องการระงับบัญชีนี้ใช่หรือไม่?" : "คุณต้องการปลดล็อกบัญชีนี้ใช่หรือไม่?";
+    if (!window.confirm(confirmMsg)) return;
+
+    const action = currentStatus ? 'disable' : 'enable';
+
+    try {
+      // ยิงไปหา Lambda ตัวใหม่ที่เราเพิ่งสร้าง (เปลี่ยน URL ด้วยนะครับ)
+      await axios.post(`${API_URL}/admin/users/status`, 
+        { username: username, action: action },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      
+      alert(currentStatus ? 'ระงับบัญชีสำเร็จ' : 'ปลดล็อกบัญชีสำเร็จ');
+      
+      // ดึงข้อมูลใหม่มาแสดงผลเพื่ออัปเดตตาราง
+      fetchUsers(); 
+    } catch (err) {
+      console.error('Error toggling user status:', err);
+      alert('เกิดข้อผิดพลาดในการเปลี่ยนสถานะ');
+    }
+  };
+
   if (loading) return <div style={{ padding: '20px' }}>⏳ กำลังโหลดข้อมูลผู้ใช้งาน...</div>;
   if (error) return <div style={{ padding: '20px', color: 'red' }}>❌ {error}</div>;
 
@@ -59,8 +84,9 @@ const AdminDashboard = ({ token }) => {
               </td>
               <td style={{ padding: '12px' }}>
                 {/* ปุ่มนี้เดี๋ยวเรามาเขียนฟังก์ชันเชื่อม API ระงับสิทธิ์ทีหลังครับ */}
-                <button 
-                  style={{ 
+                <button
+                    onClick={() => toggleStatus(user.username, user.enabled)}
+                    style={{ 
                     padding: '6px 12px', 
                     backgroundColor: user.enabled ? '#ff4d4f' : '#52c41a', 
                     color: 'white', 
