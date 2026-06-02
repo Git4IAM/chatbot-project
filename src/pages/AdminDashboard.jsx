@@ -85,6 +85,29 @@ const AdminDashboard = () => {
     }
   };
 
+  // ฟังก์ชันลบผู้ใช้งานถาวร
+  const deleteUser = async (username, email) => {
+    // ใช้หน้าต่างเตือนแบบขู่ให้กลัวนิดนึง เพราะลบแล้วกู้ไม่ได้ครับ
+    if (!window.confirm(`คำเตือน: คุณต้องการลบบัญชี ${email} ทิ้งอย่างถาวรใช่หรือไม่?\nการกระทำนี้ไม่สามารถย้อนกลับได้!`)) return;
+
+    try {
+      const session = await fetchAuthSession();
+      const token = session.tokens?.idToken?.toString();
+      
+      // ยิงไปที่ Path /delete ที่เพิ่งสร้างใหม่
+      await axios.post(`${API_ADMIN_URL}/admin/users/delete`, 
+        { username: username },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      
+      alert('ลบผู้ใช้งานออกจากระบบเรียบร้อยแล้ว');
+      fetchUsers(); // รีเฟรชตาราง
+    } catch (err) {
+      console.error('Error deleting user:', err);
+      alert('เกิดข้อผิดพลาดในการลบผู้ใช้งาน');
+    }
+  };
+
   if (loading)
     return (
       <div style={{ padding: "20px" }}>⏳ กำลังโหลดข้อมูลผู้ใช้งาน...</div>
@@ -192,6 +215,23 @@ const AdminDashboard = () => {
                                             }}
                                         >
                                             {user.enabled ? 'ระงับการใช้' : 'ปลดล็อก'}
+                                        </button>
+
+                                        {/* ปุ่มลบผู้ใช้งานถาวร */}
+                                        <button
+                                            onClick={() => deleteUser(user.username, user.email)}
+                                            style={{
+                                                padding: '6px 12px',
+                                                backgroundColor: '#dc2626', // สีแดงเข้มให้ดูอันตราย
+                                                color: 'white',
+                                                border: 'none',
+                                                borderRadius: '4px',
+                                                cursor: 'pointer'
+                                            }}
+                                            disabled={user.is_admin} // ป้องกันไม่ให้แอดมินเผลอลบกันเอง
+                                            title={user.is_admin ? "ไม่สามารถลบ Admin ด้วยกันเองได้" : "ลบผู้ใช้งานนี้ถาวร"}
+                                        >
+                                            ลบ
                                         </button>
                                     </td>
                                 </tr>
