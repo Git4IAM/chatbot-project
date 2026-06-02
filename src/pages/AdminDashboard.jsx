@@ -64,6 +64,27 @@ const AdminDashboard = () => {
     }
   };
 
+  // ฟังก์ชันสำหรับแต่งตั้งเป็น Admin
+  const promoteToAdmin = async (username, email) => {
+    if (!window.confirm(`ยืนยันการแต่งตั้ง ${email} ให้เป็น Admin ใช่หรือไม่?`)) return;
+
+    try {
+      const session = await fetchAuthSession();
+      const token = session.tokens?.idToken?.toString();
+      
+      await axios.post(`${API_ADMIN_URL}/admin/users/promote`, 
+        { username: username },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      
+      alert('แต่งตั้งเป็น Admin สำเร็จ!');
+      fetchUsers(); // รีเฟรชตาราง
+    } catch (err) {
+      console.error('Error promoting user:', err);
+      alert('เกิดข้อผิดพลาดในการแต่งตั้ง Admin');
+    }
+  };
+
   if (loading)
     return (
       <div style={{ padding: "20px" }}>⏳ กำลังโหลดข้อมูลผู้ใช้งาน...</div>
@@ -144,6 +165,7 @@ const AdminDashboard = () => {
                                         
                                         {/* ปุ่มตั้งเป็นแอดมิน (เตรียมไว้ก่อน) */}
                                         <button
+                                            onClick={() => promoteToAdmin(user.username, user.email)}
                                             style={{
                                                 padding: '6px 12px',
                                                 backgroundColor: user.is_admin ? '#9ca3af' : '#f59e0b',
