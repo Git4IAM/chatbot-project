@@ -64,24 +64,31 @@ const AdminDashboard = () => {
     }
   };
 
-  // ฟังก์ชันสำหรับแต่งตั้งเป็น Admin
-  const promoteToAdmin = async (username, email) => {
-    if (!window.confirm(`ยืนยันการแต่งตั้ง ${email} ให้เป็น Admin ใช่หรือไม่?`)) return;
+  // ฟังก์ชันสลับสิทธิ์ Admin (เลื่อนยศ / ถอดยศ)
+  const toggleAdminRole = async (username, email, is_admin) => {
+    const confirmMsg = is_admin 
+      ? `ยืนยันการถอนสิทธิ์ Admin ของ ${email} ใช่หรือไม่?` 
+      : `ยืนยันการแต่งตั้ง ${email} ให้เป็น Admin ใช่หรือไม่?`;
+      
+    if (!window.confirm(confirmMsg)) return;
+
+    // ถ้าเป็นแอดมินอยู่แล้ว ให้ส่งคำสั่ง demote ถ้ายืนยันจะให้ส่ง promote
+    const action = is_admin ? 'demote' : 'promote';
 
     try {
       const session = await fetchAuthSession();
       const token = session.tokens?.idToken?.toString();
       
       await axios.post(`${API_ADMIN_URL}/admin/users/promote`, 
-        { username: username },
+        { username: username, action: action },
         { headers: { Authorization: `Bearer ${token}` } }
       );
       
-      alert('แต่งตั้งเป็น Admin สำเร็จ!');
-      fetchUsers(); // รีเฟรชตาราง
+      alert(is_admin ? 'ถอนสิทธิ์ Admin สำเร็จ' : 'แต่งตั้งเป็น Admin สำเร็จ!');
+      fetchUsers(); 
     } catch (err) {
-      console.error('Error promoting user:', err);
-      alert('เกิดข้อผิดพลาดในการแต่งตั้ง Admin');
+      console.error('Error toggling admin role:', err);
+      alert('เกิดข้อผิดพลาดในการเปลี่ยนสิทธิ์');
     }
   };
 
@@ -159,50 +166,24 @@ const AdminDashboard = () => {
                         <tbody>
                             {users.map((user, index) => (
                                 <tr key={index} style={{ borderBottom: '1px solid #eee' }}>
-                                    <td style={{ padding: '12px' }}>{user.email}</td>
-                                    
-                                    {/* คอลัมน์โดเมน (ใหม่) */}
-                                    <td style={{ padding: '12px' }}>
-                                        <span style={{ backgroundColor: '#e0e7ff', color: '#3730a3', padding: '4px 8px', borderRadius: '4px', fontSize: '0.9em' }}>
-                                            {user.domain}
-                                        </span>
-                                    </td>
-
-                                    {/* คอลัมน์สิทธิ์ (ใหม่) */}
-                                    <td style={{ padding: '12px' }}>
-                                        {user.is_admin ? (
-                                            <span style={{ color: '#d97706', fontWeight: 'bold' }}>Admin</span>
-                                        ) : (
-                                            <span style={{ color: '#4b5563' }}> User</span>
-                                        )}
-                                    </td>
-
-                                    <td style={{ padding: '12px' }}>
-                                        {user.enabled ? (
-                                            <span style={{ color: 'green', fontWeight: 'bold' }}>ใช้งานอยู่</span>
-                                        ) : (
-                                            <span style={{ color: 'red', fontWeight: 'bold' }}>ถูกระงับ</span>
-                                        )}
-                                    </td>
                                     <td style={{ padding: '12px', display: 'flex', gap: '8px' }}>
                                         
-                                        {/* ปุ่มตั้งเป็นแอดมิน (เตรียมไว้ก่อน) */}
+                                        {/* 1. ปุ่มสลับสิทธิ์ Admin */}
                                         <button
-                                            onClick={() => promoteToAdmin(user.username, user.email)}
+                                            onClick={() => toggleAdminRole(user.username, user.email, user.is_admin)}
                                             style={{
                                                 padding: '6px 12px',
-                                                backgroundColor: user.is_admin ? '#9ca3af' : '#f59e0b',
+                                                backgroundColor: user.is_admin ? '#6b7280' : '#f59e0b', // ถ้าเป็น Admin จะเป็นสีเทา
                                                 color: 'white',
                                                 border: 'none',
                                                 borderRadius: '4px',
-                                                cursor: user.is_admin ? 'not-allowed' : 'pointer'
+                                                cursor: 'pointer'
                                             }}
-                                            disabled={user.is_admin}
                                         >
-                                            {user.is_admin ? 'เป็น Admin แล้ว' : 'ตั้งเป็น Admin'}
+                                            {user.is_admin ? 'ถอนสิทธิ์ Admin' : 'ตั้งเป็น Admin'}
                                         </button>
 
-                                        {/* ปุ่มระงับสิทธิ์รายคน (ของเดิม) */}
+                                        {/* 2. ปุ่มระงับสิทธิ์ (เพิ่มการล็อกไม่ให้แบน Admin ด้วยกันเอง) */}
                                         <button
                                             onClick={() => toggleStatus(user.username, user.enabled)}
                                             style={{
@@ -211,28 +192,33 @@ const AdminDashboard = () => {
                                                 color: 'white',
                                                 border: 'none',
                                                 borderRadius: '4px',
-                                                cursor: 'pointer'
+                                                cursor: user.is_admin ? 'not-allowed' : 'pointer',
+                                                opacity: user.is_admin ? 0.5 : 1
                                             }}
+                                            disabled={user.is_admin} 
+                                            title={user.is_admin ? "ไม่สามารถระงับ Admin ด้วยกันเองได้" : "ระงับการใช้งาน"}
                                         >
                                             {user.enabled ? 'ระงับการใช้' : 'ปลดล็อก'}
                                         </button>
 
-                                        {/* ปุ่มลบผู้ใช้งานถาวร */}
+                                        {/* 3. ปุ่มลบผู้ใช้งานถาวร */}
                                         <button
                                             onClick={() => deleteUser(user.username, user.email)}
                                             style={{
                                                 padding: '6px 12px',
-                                                backgroundColor: '#dc2626', // สีแดงเข้มให้ดูอันตราย
+                                                backgroundColor: '#dc2626',
                                                 color: 'white',
                                                 border: 'none',
                                                 borderRadius: '4px',
-                                                cursor: 'pointer'
+                                                cursor: user.is_admin ? 'not-allowed' : 'pointer',
+                                                opacity: user.is_admin ? 0.5 : 1
                                             }}
-                                            disabled={user.is_admin} // ป้องกันไม่ให้แอดมินเผลอลบกันเอง
+                                            disabled={user.is_admin}
                                             title={user.is_admin ? "ไม่สามารถลบ Admin ด้วยกันเองได้" : "ลบผู้ใช้งานนี้ถาวร"}
                                         >
                                             ลบ
                                         </button>
+
                                     </td>
                                 </tr>
                             ))}
