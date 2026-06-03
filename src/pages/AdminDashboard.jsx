@@ -7,16 +7,57 @@ import { useNavigate } from "react-router-dom";
 // รับค่า token มาจาก App.js หรือ Context เพื่อใช้ยืนยันตัวตนกับ API
 const AdminDashboard = () => {
   const [users, setUsers] = useState([]);
-  const [searchTerm, setSearchTerm] = useState(''); // เก็บคำค้นหา
-  const [sortBy, setSortBy] = useState('email');    // เก็บเงื่อนไขการเรียงลำดับ (ค่าเริ่มต้นคือเรียงตามอีเมล)
+  const [searchTerm, setSearchTerm] = useState(""); // เก็บคำค้นหา
+  const [sortBy, setSortBy] = useState("email"); // เก็บเงื่อนไขการเรียงลำดับ (ค่าเริ่มต้นคือเรียงตามอีเมล)
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const navigate = useNavigate();
   const totalUsers = users.length;
-  const totalAdmins = users.filter(u => u.is_admin).length;
-  const totalDisabled = users.filter(u => !u.enabled).length;
+  const totalAdmins = users.filter((u) => u.is_admin).length;
+  const totalDisabled = users.filter((u) => !u.enabled).length;
 
   const API_ADMIN_URL = import.meta.env.VITE_API_BASE_URL;
+
+  // --- ส่วนของระบบจัดการโดเมน ---
+  const [domains, setDomains] = useState([]);
+  const [newDomain, setNewDomain] = useState("");
+
+  // โหลดโดเมนพร้อมกับโหลด User
+  useEffect(() => {
+    fetchUsers();
+    fetchDomains(); // <-- เรียกใช้ตอนเปิดหน้าเว็บ
+  }, []);
+
+  const fetchDomains = async () => {
+    try {
+      const session = await fetchAuthSession();
+      const token = session.tokens?.idToken?.toString();
+      const response = await axios.get(`${API_ADMIN_URL}/admin/domains`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setDomains(response.data.domains);
+    } catch (err) {
+      console.error("Error fetching domains:", err);
+    }
+  };
+
+  const handleDomainAction = async (action, domain, is_active = null) => {
+    if (action === "delete" && !window.confirm(`ลบโดเมน ${domain} ออกจากระบบ?`))
+      return;
+    try {
+      const session = await fetchAuthSession();
+      const token = session.tokens?.idToken?.toString();
+      await axios.post(
+        `${API_ADMIN_URL}/admin/domains`,
+        { action, domain, is_active },
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
+      setNewDomain(""); // เคลียร์ช่องพิมพ์
+      fetchDomains(); // โหลดข้อมูลใหม่
+    } catch (err) {
+      alert("เกิดข้อผิดพลาดในการจัดการโดเมน");
+    }
+  };
 
   useEffect(() => {
     fetchUsers();
@@ -71,67 +112,77 @@ const AdminDashboard = () => {
 
   // ฟังก์ชันสลับสิทธิ์ Admin (เลื่อนยศ / ถอดยศ)
   const toggleAdminRole = async (username, email, is_admin) => {
-    const confirmMsg = is_admin 
-      ? `ยืนยันการถอนสิทธิ์ Admin ของ ${email} ใช่หรือไม่?` 
+    const confirmMsg = is_admin
+      ? `ยืนยันการถอนสิทธิ์ Admin ของ ${email} ใช่หรือไม่?`
       : `ยืนยันการแต่งตั้ง ${email} ให้เป็น Admin ใช่หรือไม่?`;
-      
+
     if (!window.confirm(confirmMsg)) return;
 
     // ถ้าเป็นแอดมินอยู่แล้ว ให้ส่งคำสั่ง demote ถ้ายืนยันจะให้ส่ง promote
-    const action = is_admin ? 'demote' : 'promote';
+    const action = is_admin ? "demote" : "promote";
 
     try {
       const session = await fetchAuthSession();
       const token = session.tokens?.idToken?.toString();
-      
-      await axios.post(`${API_ADMIN_URL}/admin/users/promote`, 
+
+      await axios.post(
+        `${API_ADMIN_URL}/admin/users/promote`,
         { username: username, action: action },
-        { headers: { Authorization: `Bearer ${token}` } }
+        { headers: { Authorization: `Bearer ${token}` } },
       );
-      
-      alert(is_admin ? 'ถอนสิทธิ์ Admin สำเร็จ' : 'แต่งตั้งเป็น Admin สำเร็จ!');
-      fetchUsers(); 
+
+      alert(is_admin ? "ถอนสิทธิ์ Admin สำเร็จ" : "แต่งตั้งเป็น Admin สำเร็จ!");
+      fetchUsers();
     } catch (err) {
-      console.error('Error toggling admin role:', err);
-      alert('เกิดข้อผิดพลาดในการเปลี่ยนสิทธิ์');
+      console.error("Error toggling admin role:", err);
+      alert("เกิดข้อผิดพลาดในการเปลี่ยนสิทธิ์");
     }
   };
 
   // ฟังก์ชันลบผู้ใช้งานถาวร
   const deleteUser = async (username, email) => {
     // ใช้หน้าต่างเตือนแบบขู่ให้กลัวนิดนึง เพราะลบแล้วกู้ไม่ได้ครับ
-    if (!window.confirm(`คำเตือน: คุณต้องการลบบัญชี ${email} ทิ้งอย่างถาวรใช่หรือไม่?\nการกระทำนี้ไม่สามารถย้อนกลับได้!`)) return;
+    if (
+      !window.confirm(
+        `คำเตือน: คุณต้องการลบบัญชี ${email} ทิ้งอย่างถาวรใช่หรือไม่?\nการกระทำนี้ไม่สามารถย้อนกลับได้!`,
+      )
+    )
+      return;
 
     try {
       const session = await fetchAuthSession();
       const token = session.tokens?.idToken?.toString();
-      
+
       // ยิงไปที่ Path /delete ที่เพิ่งสร้างใหม่
-      await axios.post(`${API_ADMIN_URL}/admin/users/delete`, 
+      await axios.post(
+        `${API_ADMIN_URL}/admin/users/delete`,
         { username: username },
-        { headers: { Authorization: `Bearer ${token}` } }
+        { headers: { Authorization: `Bearer ${token}` } },
       );
-      
-      alert('ลบผู้ใช้งานออกจากระบบเรียบร้อยแล้ว');
+
+      alert("ลบผู้ใช้งานออกจากระบบเรียบร้อยแล้ว");
       fetchUsers(); // รีเฟรชตาราง
     } catch (err) {
-      console.error('Error deleting user:', err);
-      alert('เกิดข้อผิดพลาดในการลบผู้ใช้งาน');
+      console.error("Error deleting user:", err);
+      alert("เกิดข้อผิดพลาดในการลบผู้ใช้งาน");
     }
   };
 
   // ฟังก์ชันคำนวณข้อมูลที่จะแสดงผล (กรอง -> จัดเรียง)
   const displayUsers = users
-    .filter(user => {
+    .filter((user) => {
       // 1. ระบบค้นหา (กรองจากอีเมล หรือ โดเมน)
       const searchLower = searchTerm.toLowerCase();
-      return user.email.toLowerCase().includes(searchLower) || user.domain.toLowerCase().includes(searchLower);
+      return (
+        user.email.toLowerCase().includes(searchLower) ||
+        user.domain.toLowerCase().includes(searchLower)
+      );
     })
     .sort((a, b) => {
       // 2. ระบบจัดเรียง
-      if (sortBy === 'email') return a.email.localeCompare(b.email);
-      if (sortBy === 'domain') return a.domain.localeCompare(b.domain);
-      if (sortBy === 'role') return (b.is_admin ? 1 : 0) - (a.is_admin ? 1 : 0); // ดัน Admin ขึ้นบนสุด
+      if (sortBy === "email") return a.email.localeCompare(b.email);
+      if (sortBy === "domain") return a.domain.localeCompare(b.domain);
+      if (sortBy === "role") return (b.is_admin ? 1 : 0) - (a.is_admin ? 1 : 0); // ดัน Admin ขึ้นบนสุด
       return 0;
     });
 
@@ -173,138 +224,321 @@ const AdminDashboard = () => {
             </button>
           </div>
           {/* 👇 1. เพิ่มแถบเครื่องมือ ค้นหา & จัดเรียง ไว้เหนือตาราง */}
-                    <div style={{ display: 'flex', gap: '15px', marginTop: '20px', marginBottom: '10px' }}>
-                        <input 
-                            type="text" 
-                            placeholder="ค้นหาอีเมล หรือ โดเมน..." 
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            style={{ 
-                              padding: '8px 12px', 
-                              borderRadius: '4px', 
-                              border: '1px solid #ccc', 
-                              backgroundColor: 'white',
-                              color: 'black',
-                              flex: 1, 
-                              maxWidth: '300px' }}
-                        />
-                        <select 
-                            value={sortBy} 
-                            onChange={(e) => setSortBy(e.target.value)}
-                            style={{ 
-                              padding: '8px 12px', 
-                              borderRadius: '4px', 
-                              border: '1px solid #ccc',
-                              backgroundColor: 'white',
-                              color: 'black',
-                              cursor: 'pointer'
-                            }}
-                        >
-                            <option value="email">เรียงตาม: อีเมล (A-Z)</option>
-                            <option value="domain">เรียงตาม: โดเมน</option>
-                            <option value="role">เรียงตาม: สิทธิ์ (Admin ขึ้นก่อน)</option>
-                        </select>
-                    </div>
+          <div
+            style={{
+              display: "flex",
+              gap: "15px",
+              marginTop: "20px",
+              marginBottom: "10px",
+            }}
+          >
+            <input
+              type="text"
+              placeholder="ค้นหาอีเมล หรือ โดเมน..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              style={{
+                padding: "8px 12px",
+                borderRadius: "4px",
+                border: "1px solid #ccc",
+                backgroundColor: "white",
+                color: "black",
+                flex: 1,
+                maxWidth: "300px",
+              }}
+            />
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              style={{
+                padding: "8px 12px",
+                borderRadius: "4px",
+                border: "1px solid #ccc",
+                backgroundColor: "white",
+                color: "black",
+                cursor: "pointer",
+              }}
+            >
+              <option value="email">เรียงตาม: อีเมล (A-Z)</option>
+              <option value="domain">เรียงตาม: โดเมน</option>
+              <option value="role">เรียงตาม: สิทธิ์ (Admin ขึ้นก่อน)</option>
+            </select>
+          </div>
           {/* กล่องครอบตารางเพื่อให้มี Scrollbar */}
-                    <div style={{ overflowX: 'auto', width: '100%', marginTop: '20px' }}>
-                        <table style={{ width: '100%', minWidth: '900px', borderCollapse: 'collapse' }}>
-                            <thead>
-                                <tr style={{ backgroundColor: '#f4f4f4', textAlign: 'left' }}>
-                                    <th style={{ padding: '12px', borderBottom: '2px solid #ddd' }}>อีเมล ({totalUsers})</th>
-                                    <th style={{ padding: '12px', borderBottom: '2px solid #ddd' }}>โดเมน</th>
-                                    <th style={{ padding: '12px', borderBottom: '2px solid #ddd' }}>สิทธิ์ (Admin {totalAdmins})</th>
-                                    <th style={{ padding: '12px', borderBottom: '2px solid #ddd' }}>สถานะ (ถูกระงับ {totalDisabled})</th>
-                                    <th style={{ padding: '12px', borderBottom: '2px solid #ddd', textAlign: 'center' }}>จัดการ</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {displayUsers.map((user, index) => (
-                                    <tr key={index} style={{ borderBottom: '1px solid #eee' }}>
-                                        
-                                        {/* 1. คอลัมน์อีเมล */}
-                                        <td style={{ padding: '12px' }}>{user.email}</td>
-                                        
-                                        {/* 2. คอลัมน์โดเมน */}
-                                        <td style={{ padding: '12px' }}>
-                                            <span style={{ backgroundColor: '#e0e7ff', color: '#3730a3', padding: '4px 8px', borderRadius: '4px', fontSize: '0.9em' }}>
-                                                {user.domain}
-                                            </span>
-                                        </td>
+          <div style={{ overflowX: "auto", width: "100%", marginTop: "20px" }}>
+            <table
+              style={{
+                width: "100%",
+                minWidth: "900px",
+                borderCollapse: "collapse",
+              }}
+            >
+              <thead>
+                <tr style={{ backgroundColor: "#f4f4f4", textAlign: "left" }}>
+                  <th
+                    style={{ padding: "12px", borderBottom: "2px solid #ddd" }}
+                  >
+                    อีเมล ({totalUsers})
+                  </th>
+                  <th
+                    style={{ padding: "12px", borderBottom: "2px solid #ddd" }}
+                  >
+                    โดเมน
+                  </th>
+                  <th
+                    style={{ padding: "12px", borderBottom: "2px solid #ddd" }}
+                  >
+                    สิทธิ์ (Admin {totalAdmins})
+                  </th>
+                  <th
+                    style={{ padding: "12px", borderBottom: "2px solid #ddd" }}
+                  >
+                    สถานะ (ถูกระงับ {totalDisabled})
+                  </th>
+                  <th
+                    style={{
+                      padding: "12px",
+                      borderBottom: "2px solid #ddd",
+                      textAlign: "center",
+                    }}
+                  >
+                    จัดการ
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {displayUsers.map((user, index) => (
+                  <tr key={index} style={{ borderBottom: "1px solid #eee" }}>
+                    {/* 1. คอลัมน์อีเมล */}
+                    <td style={{ padding: "12px" }}>{user.email}</td>
 
-                                        {/* 3. คอลัมน์สิทธิ์ (Role) */}
-                                        <td style={{ padding: '12px' }}>
-                                            {user.is_admin ? (
-                                                <span style={{ color: '#d97706', fontWeight: 'bold' }}>Admin</span>
-                                            ) : (
-                                                <span style={{ color: '#4b5563' }}>User</span>
-                                            )}
-                                        </td>
+                    {/* 2. คอลัมน์โดเมน */}
+                    <td style={{ padding: "12px" }}>
+                      <span
+                        style={{
+                          backgroundColor: "#e0e7ff",
+                          color: "#3730a3",
+                          padding: "4px 8px",
+                          borderRadius: "4px",
+                          fontSize: "0.9em",
+                        }}
+                      >
+                        {user.domain}
+                      </span>
+                    </td>
 
-                                        {/* 4. คอลัมน์สถานะ */}
-                                        <td style={{ padding: '12px' }}>
-                                            {user.enabled ? (
-                                                <span style={{ color: 'green', fontWeight: 'bold' }}>ใช้งานอยู่</span>
-                                            ) : (
-                                                <span style={{ color: 'red', fontWeight: 'bold' }}>ถูกระงับ</span>
-                                            )}
-                                        </td>
+                    {/* 3. คอลัมน์สิทธิ์ (Role) */}
+                    <td style={{ padding: "12px" }}>
+                      {user.is_admin ? (
+                        <span style={{ color: "#d97706", fontWeight: "bold" }}>
+                          Admin
+                        </span>
+                      ) : (
+                        <span style={{ color: "#4b5563" }}>User</span>
+                      )}
+                    </td>
 
-                                        {/* 5. คอลัมน์จัดการ (รวม 3 ปุ่ม) */}
-                                        <td style={{ padding: '12px', display: 'flex', gap: '8px' }}>
-                                            <button
-                                                onClick={() => toggleAdminRole(user.username, user.email, user.is_admin)}
-                                                style={{
-                                                    padding: '6px 12px',
-                                                    backgroundColor: user.is_admin ? '#6b7280' : '#f59e0b',
-                                                    color: 'white',
-                                                    border: 'none',
-                                                    borderRadius: '4px',
-                                                    cursor: 'pointer'
-                                                }}
-                                            >
-                                                {user.is_admin ? 'ถอนสิทธิ์ Admin' : 'ตั้งเป็น Admin'}
-                                            </button>
+                    {/* 4. คอลัมน์สถานะ */}
+                    <td style={{ padding: "12px" }}>
+                      {user.enabled ? (
+                        <span style={{ color: "green", fontWeight: "bold" }}>
+                          ใช้งานอยู่
+                        </span>
+                      ) : (
+                        <span style={{ color: "red", fontWeight: "bold" }}>
+                          ถูกระงับ
+                        </span>
+                      )}
+                    </td>
 
-                                            <button
-                                                onClick={() => toggleStatus(user.username, user.enabled)}
-                                                style={{
-                                                    padding: '6px 12px',
-                                                    backgroundColor: user.enabled ? '#ff4d4f' : '#52c41a',
-                                                    color: 'white',
-                                                    border: 'none',
-                                                    borderRadius: '4px',
-                                                    cursor: user.is_admin ? 'not-allowed' : 'pointer',
-                                                    opacity: user.is_admin ? 0.5 : 1
-                                                }}
-                                                disabled={user.is_admin} 
-                                                title={user.is_admin ? "ไม่สามารถระงับ Admin ด้วยกันเองได้" : "ระงับการใช้งาน"}
-                                            >
-                                                {user.enabled ? 'ระงับการใช้' : 'ปลดล็อก'}
-                                            </button>
+                    {/* 5. คอลัมน์จัดการ (รวม 3 ปุ่ม) */}
+                    <td
+                      style={{ padding: "12px", display: "flex", gap: "8px" }}
+                    >
+                      <button
+                        onClick={() =>
+                          toggleAdminRole(
+                            user.username,
+                            user.email,
+                            user.is_admin,
+                          )
+                        }
+                        style={{
+                          padding: "6px 12px",
+                          backgroundColor: user.is_admin
+                            ? "#6b7280"
+                            : "#f59e0b",
+                          color: "white",
+                          border: "none",
+                          borderRadius: "4px",
+                          cursor: "pointer",
+                        }}
+                      >
+                        {user.is_admin ? "ถอนสิทธิ์ Admin" : "ตั้งเป็น Admin"}
+                      </button>
 
-                                            <button
-                                                onClick={() => deleteUser(user.username, user.email)}
-                                                style={{
-                                                    padding: '6px 12px',
-                                                    backgroundColor: '#dc2626',
-                                                    color: 'white',
-                                                    border: 'none',
-                                                    borderRadius: '4px',
-                                                    cursor: user.is_admin ? 'not-allowed' : 'pointer',
-                                                    opacity: user.is_admin ? 0.5 : 1
-                                                }}
-                                                disabled={user.is_admin}
-                                                title={user.is_admin ? "ไม่สามารถลบ Admin ด้วยกันเองได้" : "ลบผู้ใช้งานนี้ถาวร"}
-                                            >
-                                                ลบ
-                                            </button>
-                                        </td>
-                                        
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
+                      <button
+                        onClick={() =>
+                          toggleStatus(user.username, user.enabled)
+                        }
+                        style={{
+                          padding: "6px 12px",
+                          backgroundColor: user.enabled ? "#ff4d4f" : "#52c41a",
+                          color: "white",
+                          border: "none",
+                          borderRadius: "4px",
+                          cursor: user.is_admin ? "not-allowed" : "pointer",
+                          opacity: user.is_admin ? 0.5 : 1,
+                        }}
+                        disabled={user.is_admin}
+                        title={
+                          user.is_admin
+                            ? "ไม่สามารถระงับ Admin ด้วยกันเองได้"
+                            : "ระงับการใช้งาน"
+                        }
+                      >
+                        {user.enabled ? "ระงับการใช้งาน" : "ปลดล็อก"}
+                      </button>
+
+                      <button
+                        onClick={() => deleteUser(user.username, user.email)}
+                        style={{
+                          padding: "6px 12px",
+                          backgroundColor: "#dc2626",
+                          color: "white",
+                          border: "none",
+                          borderRadius: "4px",
+                          cursor: user.is_admin ? "not-allowed" : "pointer",
+                          opacity: user.is_admin ? 0.5 : 1,
+                        }}
+                        disabled={user.is_admin}
+                        title={
+                          user.is_admin
+                            ? "ไม่สามารถลบ Admin ด้วยกันเองได้"
+                            : "ลบผู้ใช้งานนี้ถาวร"
+                        }
+                      >
+                        ลบ
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          {/* ================= ส่วนจัดการ Domain ================= */}
+          <div
+            style={{
+              marginTop: "40px",
+              padding: "20px",
+              backgroundColor: "#f9fafb",
+              borderRadius: "8px",
+              border: "1px solid #e5e7eb",
+            }}
+          >
+            <h3
+              style={{ marginTop: 0, marginBottom: "16px", color: "#1f2937" }}
+            >
+              จัดการโดเมนที่อนุญาต
+            </h3>
+
+            {/* กล่องเพิ่มโดเมนใหม่ */}
+            <div style={{ display: "flex", gap: "10px", marginBottom: "20px" }}>
+              <input
+                type="text"
+                placeholder="เช่น su.ac.th หรือ gmail.com"
+                value={newDomain}
+                onChange={(e) => setNewDomain(e.target.value)}
+                style={{
+                  padding: "8px 12px",
+                  borderRadius: "4px",
+                  border: "1px solid #ccc",
+                  backgroundColor: "white",
+                  color: "black",
+                  flex: 1,
+                  maxWidth: "300px",
+                }}
+              />
+              <button
+                onClick={() =>
+                  newDomain && handleDomainAction("add", newDomain)
+                }
+                style={{
+                  padding: "8px 16px",
+                  backgroundColor: "#10b981",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "4px",
+                  cursor: "pointer",
+                }}
+              >
+                + เพิ่มโดเมน
+              </button>
+            </div>
+
+            {/* รายการโดเมน */}
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "12px" }}>
+              {domains.map((d, index) => (
+                <div
+                  key={index}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    padding: "8px 12px",
+                    backgroundColor: "white",
+                    border: `1px solid ${d.is_active ? "#cbd5e1" : "#fca5a5"}`,
+                    borderRadius: "6px",
+                    boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
+                  }}
+                >
+                  <span
+                    style={{
+                      fontWeight: "500",
+                      color: d.is_active ? "#333" : "#ef4444",
+                      textDecoration: d.is_active ? "none" : "line-through",
+                    }}
+                  >
+                    @{d.domain}
+                  </span>
+
+                  {/* ปุ่มเปิด/ปิด (สลับสถานะ) */}
+                  <button
+                    onClick={() =>
+                      handleDomainAction("toggle", d.domain, !d.is_active)
+                    }
+                    style={{
+                      padding: "4px 8px",
+                      fontSize: "12px",
+                      backgroundColor: d.is_active ? "#fbbf24" : "#10b981",
+                      color: "white",
+                      border: "none",
+                      borderRadius: "4px",
+                      cursor: "pointer",
+                    }}
+                  >
+                    {d.is_active ? "ระงับ" : "เปิดใช้"}
+                  </button>
+
+                  {/* ปุ่มลบทิ้ง */}
+                  <button
+                    onClick={() => handleDomainAction("delete", d.domain)}
+                    style={{
+                      padding: "4px 8px",
+                      fontSize: "12px",
+                      backgroundColor: "#ef4444",
+                      color: "white",
+                      border: "none",
+                      borderRadius: "4px",
+                      cursor: "pointer",
+                    }}
+                  >
+                    ลบ
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     </div>
