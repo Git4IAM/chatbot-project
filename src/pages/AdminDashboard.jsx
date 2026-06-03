@@ -12,6 +12,9 @@ const AdminDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const navigate = useNavigate();
+  const totalUsers = users.length;
+  const totalAdmins = users.filter(u => u.is_admin).length;
+  const totalDisabled = users.filter(u => !u.enabled).length;
 
   const API_ADMIN_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -207,11 +210,11 @@ const AdminDashboard = () => {
                         <table style={{ width: '100%', minWidth: '900px', borderCollapse: 'collapse' }}>
                             <thead>
                                 <tr style={{ backgroundColor: '#f4f4f4', textAlign: 'left' }}>
-                                    <th style={{ padding: '12px', borderBottom: '2px solid #ddd' }}>อีเมล (Email)</th>
+                                    <th style={{ padding: '12px', borderBottom: '2px solid #ddd' }}>อีเมล ({totalUsers})</th>
                                     <th style={{ padding: '12px', borderBottom: '2px solid #ddd' }}>โดเมน</th>
-                                    <th style={{ padding: '12px', borderBottom: '2px solid #ddd' }}>สิทธิ์ (Role)</th>
-                                    <th style={{ padding: '12px', borderBottom: '2px solid #ddd' }}>สถานะ</th>
-                                    <th style={{ padding: '12px', borderBottom: '2px solid #ddd' }}>จัดการ</th>
+                                    <th style={{ padding: '12px', borderBottom: '2px solid #ddd' }}>สิทธิ์ (Admin {totalAdmins})</th>
+                                    <th style={{ padding: '12px', borderBottom: '2px solid #ddd' }}>สถานะ (ถูกระงับ {totalDisabled})</th>
+                                    <th style={{ padding: '12px', borderBottom: '2px solid #ddd', textAlign: 'center' }}>จัดการ</th>
                                 </tr>
                             </thead>
                             <tbody>
