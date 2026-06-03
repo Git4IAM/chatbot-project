@@ -7,6 +7,8 @@ import { useNavigate } from "react-router-dom";
 // รับค่า token มาจาก App.js หรือ Context เพื่อใช้ยืนยันตัวตนกับ API
 const AdminDashboard = () => {
   const [users, setUsers] = useState([]);
+  const [searchTerm, setSearchTerm] = useState(''); // เก็บคำค้นหา
+  const [sortBy, setSortBy] = useState('email');    // เก็บเงื่อนไขการเรียงลำดับ (ค่าเริ่มต้นคือเรียงตามอีเมล)
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const navigate = useNavigate();
@@ -115,6 +117,21 @@ const AdminDashboard = () => {
     }
   };
 
+  // ฟังก์ชันคำนวณข้อมูลที่จะแสดงผล (กรอง -> จัดเรียง)
+  const displayUsers = users
+    .filter(user => {
+      // 1. ระบบค้นหา (กรองจากอีเมล หรือ โดเมน)
+      const searchLower = searchTerm.toLowerCase();
+      return user.email.toLowerCase().includes(searchLower) || user.domain.toLowerCase().includes(searchLower);
+    })
+    .sort((a, b) => {
+      // 2. ระบบจัดเรียง
+      if (sortBy === 'email') return a.email.localeCompare(b.email);
+      if (sortBy === 'domain') return a.domain.localeCompare(b.domain);
+      if (sortBy === 'role') return (b.is_admin ? 1 : 0) - (a.is_admin ? 1 : 0); // ดัน Admin ขึ้นบนสุด
+      return 0;
+    });
+
   if (loading)
     return (
       <div style={{ padding: "20px" }}>⏳ กำลังโหลดข้อมูลผู้ใช้งาน...</div>
@@ -152,6 +169,39 @@ const AdminDashboard = () => {
               กลับหน้าแชท
             </button>
           </div>
+          {/* 👇 1. เพิ่มแถบเครื่องมือ ค้นหา & จัดเรียง ไว้เหนือตาราง */}
+                    <div style={{ display: 'flex', gap: '15px', marginTop: '20px', marginBottom: '10px' }}>
+                        <input 
+                            type="text" 
+                            placeholder="ค้นหาอีเมล หรือ โดเมน..." 
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            style={{ 
+                              padding: '8px 12px', 
+                              borderRadius: '4px', 
+                              border: '1px solid #ccc', 
+                              backgroundColor: 'white',
+                              color: 'black',
+                              flex: 1, 
+                              maxWidth: '300px' }}
+                        />
+                        <select 
+                            value={sortBy} 
+                            onChange={(e) => setSortBy(e.target.value)}
+                            style={{ 
+                              padding: '8px 12px', 
+                              borderRadius: '4px', 
+                              border: '1px solid #ccc',
+                              backgroundColor: 'white',
+                              color: 'black',
+                              cursor: 'pointer'
+                            }}
+                        >
+                            <option value="email">เรียงตาม: อีเมล (A-Z)</option>
+                            <option value="domain">เรียงตาม: โดเมน</option>
+                            <option value="role">เรียงตาม: สิทธิ์ (Admin ขึ้นก่อน)</option>
+                        </select>
+                    </div>
           {/* กล่องครอบตารางเพื่อให้มี Scrollbar */}
                     <div style={{ overflowX: 'auto', width: '100%', marginTop: '20px' }}>
                         <table style={{ width: '100%', minWidth: '900px', borderCollapse: 'collapse' }}>
@@ -165,7 +215,7 @@ const AdminDashboard = () => {
                                 </tr>
                             </thead>
                             <tbody>
-                                {users.map((user, index) => (
+                                {displayUsers.map((user, index) => (
                                     <tr key={index} style={{ borderBottom: '1px solid #eee' }}>
                                         
                                         {/* 1. คอลัมน์อีเมล */}
