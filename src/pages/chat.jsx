@@ -349,9 +349,9 @@ const handleDelete = async (sid) => {
 
       {/* --- MAIN CONTENT --- */}
       <div className="main-content">
-        <div className="top-bar" style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%'}}>
+        <div className="top-bar" style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', position: 'relative'}}>
           {/* Model Switcher */}
-          <div className="model-selector">
+          <div className="model-selector" style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)' }}>
             <span className="model-label">Model: </span>
             <select
               value={selectedModel}
