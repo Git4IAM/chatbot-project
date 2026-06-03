@@ -82,8 +82,8 @@ export default function Login() {
             justifyContent: 'center'
           }}
         >
-          <h2 style={{ margin: '0 0 8px', color: '#1a2e3b', fontSize: 26, fontWeight: 700 }}>Sign in</h2>
-          <p style={{ color: '#666', fontSize: 14, marginBottom: 32 }}>ใช้ Email ในการเข้าใช้งาน</p>
+          <h2 style={{ margin: '0 0 8px', color: '#1a2e3b', fontSize: 26, fontWeight: 700 }}>Sign up</h2>
+          <p style={{ color: '#666', fontSize: 14, marginBottom: 32 }}>สมัครโดยใช้ Email ในการเข้าใช้งาน</p>
 
           <button
             onClick={async () => {
@@ -110,7 +110,7 @@ export default function Login() {
             }}
           >
             <img src="https://www.google.com/favicon.ico" width={20} height={20} alt="Google Logo" />
-            <span style={{ fontWeight: 600, color: '#333' }}>Login with Google</span>
+            <span style={{ fontWeight: 600, color: '#333' }}>Continue with Google</span>
           </button>
 
           {error && (
