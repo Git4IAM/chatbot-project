@@ -290,6 +290,11 @@ const AdminDashboard = () => {
                   >
                     สิทธิ์ (Admin {totalAdmins})
                   </th>
+                  <th 
+                    style={{ padding: '12px', borderBottom: '2px solid #ddd' }}
+                  >
+                    การใช้งาน (Tokens / Cost)
+                  </th>
                   <th
                     style={{ padding: "12px", borderBottom: "2px solid #ddd" }}
                   >
@@ -336,6 +341,15 @@ const AdminDashboard = () => {
                       ) : (
                         <span style={{ color: "#4b5563" }}>User</span>
                       )}
+                    </td>
+
+                    <td style={{ padding: '12px' }}>
+                        <div style={{ fontSize: '0.9em', color: '#4b5563' }}>
+                          ⚡ {((user.total_tokens) || 0).toLocaleString()}
+                        </div>
+                        <div style={{ fontSize: '0.85em', color: '#059669', fontWeight: 'bold' }}>
+                          💰 ${(user.total_cost || 0).toFixed(6)}
+                        </div>
                     </td>
 
                     {/* 4. คอลัมน์สถานะ */}
