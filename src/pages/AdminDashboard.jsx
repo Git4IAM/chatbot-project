@@ -54,6 +54,23 @@ const AdminDashboard = () => {
       );
       setNewDomain(""); // เคลียร์ช่องพิมพ์
       fetchDomains(); // โหลดข้อมูลใหม่
+
+      if (action === "toggle") {
+        // ถ้าระงับ/เปิดโดเมน ให้เปลี่ยนสถานะ enabled ของ User ที่โดเมนตรงกัน
+        setUsers(prevUsers => 
+          prevUsers.map(user => 
+            user.domain === domain ? { ...user, enabled: is_active } : user
+          )
+        );
+      } else if (action === "delete") {
+        // ถ้าลบโดเมนทิ้ง (ถือว่าระงับการใช้งาน) ให้เปลี่ยนสถานะ User เป็น false
+        setUsers(prevUsers => 
+          prevUsers.map(user => 
+            user.domain === domain ? { ...user, enabled: false } : user
+          )
+        );
+      }
+
     } catch (err) {
       alert("เกิดข้อผิดพลาดในการจัดการโดเมน");
     }
