@@ -208,7 +208,7 @@ const AdminDashboard = () => {
               alignItems: "center",
             }}
           >
-            <h2>ระบบจัดการผู้ใช้งาน (Admin Dashboard)</h2>
+            <h2>ระบบจัดการผู้ใช้งาน (Admin  Management)</h2>
             <button
               onClick={() => navigate("/chat")}
               style={{
@@ -290,10 +290,15 @@ const AdminDashboard = () => {
                   >
                     สิทธิ์ (Admin {totalAdmins})
                   </th>
-                  <th 
-                    style={{ padding: '12px', borderBottom: '2px solid #ddd' }}
+                  <th
+                    style={{ padding: "12px", borderBottom: "2px solid #ddd" }}
                   >
-                    การใช้งาน (Tokens / Cost)
+                    การใช้งานโดยประมาณ (Tokens / Cost)
+                  </th>
+                  <th
+                    style={{ padding: "12px", borderBottom: "2px solid #ddd" }}
+                  >
+                    โมเดลที่ใช้
                   </th>
                   <th
                     style={{ padding: "12px", borderBottom: "2px solid #ddd" }}
@@ -343,13 +348,56 @@ const AdminDashboard = () => {
                       )}
                     </td>
 
-                    <td style={{ padding: '12px' }}>
-                        <div style={{ fontSize: '0.9em', color: '#4b5563' }}>
-                          ⚡ {((user.total_tokens) || 0).toLocaleString()}
+                    <td style={{ padding: "12px" }}>
+                      <div style={{ fontSize: "0.9em", color: "#4b5563" }}>
+                        {(user.total_tokens || 0).toLocaleString()}
+                      </div>
+                      <div
+                        style={{
+                          fontSize: "0.85em",
+                          color: "#059669",
+                          fontWeight: "bold",
+                        }}
+                      >
+                        ${(user.total_cost || 0).toFixed(6)}
+                      </div>
+                    </td>
+
+                    {/* 👇 เพิ่มคอลัมน์แสดง Model ตรงนี้ 👇 */}
+                    <td style={{ padding: "12px", maxWidth: "200px" }}>
+                      {user.models_used && user.models_used.length > 0 ? (
+                        <div
+                          style={{
+                            display: "flex",
+                            flexWrap: "wrap",
+                            gap: "4px",
+                          }}
+                        >
+                          {user.models_used.map((model, idx) => (
+                            <span
+                              key={idx}
+                              style={{
+                                fontSize: "0.75em",
+                                backgroundColor: "#eef2ff",
+                                color: "#4f46e5",
+                                padding: "2px 6px",
+                                borderRadius: "4px",
+                                border: "1px solid #c7d2fe",
+                                whiteSpace: "nowrap",
+                              }}
+                            >
+                              {model
+                                .replace("us.amazon.", "")
+                                .replace("us.anthropic.", "")}{" "}
+                              {/* ตัดคำนำหน้าออกให้สั้นลง */}
+                            </span>
+                          ))}
                         </div>
-                        <div style={{ fontSize: '0.85em', color: '#059669', fontWeight: 'bold' }}>
-                          💰 ${(user.total_cost || 0).toFixed(6)}
-                        </div>
+                      ) : (
+                        <span style={{ color: "#9ca3af", fontSize: "0.9em" }}>
+                          -
+                        </span>
+                      )}
                     </td>
 
                     {/* 4. คอลัมน์สถานะ */}
