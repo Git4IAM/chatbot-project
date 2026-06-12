@@ -110,7 +110,7 @@ const AdminDashboard = () => {
     try {
       const session = await fetchAuthSession();
       const token = session.tokens?.idToken?.toString();
-      // ยิงไปหา Lambda ตัวใหม่ที่เราเพิ่งสร้าง (เปลี่ยน URL ด้วยนะครับ)
+      
       await axios.post(
         `${API_ADMIN_URL}/admin/users/status`,
         { username: username, action: action },
@@ -127,7 +127,7 @@ const AdminDashboard = () => {
     }
   };
 
-  // ฟังก์ชันสลับสิทธิ์ Admin (เลื่อนยศ / ถอดยศ)
+  // ฟังก์ชันสลับสิทธิ์ Admin
   const toggleAdminRole = async (username, email, is_admin) => {
     const confirmMsg = is_admin
       ? `ยืนยันการถอนสิทธิ์ Admin ของ ${email} ใช่หรือไม่?`
@@ -240,7 +240,7 @@ const AdminDashboard = () => {
               กลับหน้าแชท
             </button>
           </div>
-          {/* 👇 1. เพิ่มแถบเครื่องมือ ค้นหา & จัดเรียง ไว้เหนือตาราง */}
+          {/*1. เพิ่มแถบเครื่องมือ ค้นหา & จัดเรียง ไว้เหนือตาราง */}
           <div
             style={{
               display: "flex",
@@ -380,7 +380,7 @@ const AdminDashboard = () => {
                       </div>
                     </td>
 
-                    {/* 👇 เพิ่มคอลัมน์แสดง Model ตรงนี้ 👇 */}
+                    {/*คอลัมน์แสดง Model*/}
                     <td style={{ padding: "12px", maxWidth: "200px" }}>
                       {user.models_used && user.models_used.length > 0 ? (
                         <div
